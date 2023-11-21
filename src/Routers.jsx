@@ -12,6 +12,7 @@ import MasterPage from "./pages/MasterPage";
 import Test from "./pages/Test";
 import { useDispatch, useSelector } from "react-redux";
 import PartSupply from "./pages/PartSupply";
+import DOPage from "./pages/DOPage";
 const Routers = () => {
     const dispatch = useDispatch();
     // const VITE_BASE_PATH = 'DeliveryOrderApp'
@@ -28,7 +29,7 @@ const Routers = () => {
             <Routes>
                 <Route element={<MainLayout />}>
                     <Route path={VITE_BASE_PATH + '/'} element={<PlanPage />} />
-                    <Route path={VITE_BASE_PATH + '/do'} element={<PlanPage />} />
+                    <Route path={VITE_BASE_PATH + '/do'} element={<DOPage />} />
                     <Route path={VITE_BASE_PATH + '/supplier'} element={<SupplierPage />} />
                     <Route path={VITE_BASE_PATH + '/dopo'} element={<DoPoPage />} />
                     <Route path={VITE_BASE_PATH + '/stock'} element={<StockPage />} />

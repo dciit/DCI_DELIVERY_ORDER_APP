@@ -6,7 +6,7 @@ import moment from 'moment/moment'
 import LoginPage from '../components/LoginPage'
 import { useDispatch, useSelector } from 'react-redux'
 import FilterAltOffOutlinedIcon from '@mui/icons-material/FilterAltOffOutlined';
-import CheckBoxFilter from '../components/CheckBoxFilter'
+import CheckBoxFilter from '../components/DialogFilter'
 import DiamondIcon from '@mui/icons-material/Diamond';
 import { TableVirtuoso } from 'react-virtuoso';
 import SearchIcon from '@mui/icons-material/Search';
@@ -55,6 +55,9 @@ function PlanPage() {
     const checkMinMax = true;
     const [FirstTime, setFirstTime] = useState(true);
     const [themeSys, setThemeSys] = useState(true); // True is Night , Flase is Light
+
+
+    const [DOResult,setDOResult] = useState();
 
     useEffect(() => {
         if (FirstTime) {
@@ -159,6 +162,9 @@ function PlanPage() {
         setLoading(true);
         setMsgNoData(false);
         ServiceGetPlan(SupplierCode, buyerSelected == 'empty' ? '' : buyerSelected, '', '', checkMinMax, reducer.filter.plan.caldowhenstockminus).then((res) => {
+            setDOResult(res.data);
+
+
             setDataDefault(res.data.data);
             setRunCode(res.data.runningCode);
             setLoading(false);

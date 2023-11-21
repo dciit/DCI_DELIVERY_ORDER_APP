@@ -42,19 +42,23 @@ function LoginPage() {
             url: 'https://scm.dci.co.th/BudgetCharts/BudgetRestService/api/authen?username=' + uname + '&password=' + encodeURIComponent(pwd),
             withCredentials: false,
         }).then(async (res) => {
+            console.log(res)
             if (res.data[0]['EmpCode'] != null) {
-                var jwt = await getJwt(uname, pwd);
-                if (jwt.length) {
-                    dispatch({ type: 'JWT', payload: jwt });
+                // var jwt = await getJwt(uname, pwd);
+                // console.log(jwt.length)
+                // if (jwt.length) {
+                    // dispatch({ type: 'JWT', payload: jwt });
                     dispatch({ type: 'TYPE_ACCOUNT', payload: 'employee' });
-                    localStorage.setItem('jwt', jwt);
+                    // localStorage.setItem('jwt', jwt);
                     dispatch({ type: 'INIT_LOGIN', payload: { login: true, id: res.data[0]['EmpCode'], name: res.data[0]['ShortName'], typeAccount: 'employee' } });
                     setLoginFalse(false);
                     setLoginState(true)
-                } else {
-                    setLoginFalse(true);
-                    setLoginState(false)
-                }
+                // } else {
+                //     setLoginFalse(true);
+                //     setLoginState(false);
+                //     console.log('12312')
+
+                // }
             } else {
                 axios.post(import.meta.env.VITE_BASE_DELIVERY_ORDER + '/login/employee', { username: uname, password: encodeURIComponent(pwd) }, {
                     headers: {
@@ -78,6 +82,7 @@ function LoginPage() {
                 });
             }
         }).catch((error) => {
+            console.log(error)
             setLoginFalse(true);
             setLoginState(false)
         })

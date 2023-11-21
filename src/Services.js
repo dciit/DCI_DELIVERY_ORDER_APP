@@ -13,6 +13,8 @@ export function ServiceGetPlan(vdCode, buyer, sDate, fDate) {
     return http.post('/getplans', { vdCode: vdCode, buyer: buyer, startDate: sDate, endDate: fDate });
 }
 
+
+
 export function ServiceGetSupplier(buyer = "") {
     return http.get('/getSupplier/' + buyer);
 }
@@ -123,7 +125,6 @@ export function GetVenderDetail(vdcode) {
 }
 
 export function ServicePrivilege(type) {
-    console.log(type)
     return new Promise(resolve => {
         http.get('/privilege/' + type).then((res) => {
             resolve(res.data);
@@ -158,5 +159,43 @@ export function ServiceGetDataTimeSchedule(param) {
         http.post('/partsupply/timescheduledelivery', param).then((res) => {
             resolve(res.data);
         })
+    })
+}
+
+export function API_GET_DO(buyer, vdCode, sDate, fDate) {
+    return new Promise((resolve) => {
+        http.post('/getplans', { vdCode: vdCode, buyer: buyer, startDate: sDate, endDate: fDate }).then((res) => {
+            resolve(res.data);
+        });
+    })
+}
+
+export function API_GET_BUYER() {
+    return new Promise((resolve) => {
+        http.post('/getListBuyer').then((res) => {
+            resolve(res.data);
+        });
+    })
+}
+export function API_GET_SUPPLIER_BY_BUYER(param = {}) {
+    return new Promise((resolve) => {
+        http.post('/getListSupplierByBuyer', param).then((res) => {
+            resolve(res.data);
+        });
+    })
+}
+// export function API_RUN_DO(param = {}) {
+//     return new Promise((resolve) => {
+//         http.post('/insertDO',param).then((res) => {
+//             resolve(res.data);
+//         });
+//     })
+// }
+
+export function API_RUN_DO(buyerCode = "41256") {
+    return new Promise((resolve) => {
+        http.get('/insertDO/' + buyerCode).then((res) => {
+            resolve(res.data);
+        });
     })
 }

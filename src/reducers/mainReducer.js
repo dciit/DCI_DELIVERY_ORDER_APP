@@ -6,19 +6,19 @@ const initialState = {
     division: '',
     version: '0',
     module: '',
-    titles: [{ name: 'plan', label: 'Prod Plan (Plan * BOM)', index: 1, disabled: true, checked: true, bgColor: 'bg-yellow-500' },
-    { name: 'picklist', label: 'Picklist', index: 2, disabled: false, checked: false, bgColor: 'bg-red-500' },
-    { name: 'produse', label: 'Prod.Use', index: 3, disabled: false, checked: false, bgColor: 'bg-orange-500' },
-    { name: 'doplan', label: 'D/O Plan', index: 4, disabled: true, checked: true, bgColor: 'bg-green-500' },
-    { name: 'doact', label: 'D/O Act.', index: 5, disabled: false, checked: true, bgColor: 'bg-teal-400' },
-    { name: 'stocksimulate', label: 'P/S Stock Simulate', index: 6, disabled: true, checked: true, bgColor: 'bg-blue-600' },
+    filters: [{ name: 'plan', label: 'Prod Plan (Plan * BOM)', index: 1, disabled: true, checked: true, bgColor: 'bg-yellow-500' },
+    { name: 'pickList', label: 'PickList', index: 2, disabled: false, checked: false, bgColor: 'bg-red-500' },
+    // { name: 'produse', label: 'Prod.Use', index: 3, disabled: false, checked: false, bgColor: 'bg-orange-500' },
+    { name: 'do', label: 'D/O Plan', index: 4, disabled: true, checked: true, bgColor: 'bg-green-500' },
+    { name: 'doAct', label: 'D/O Act.', index: 5, disabled: false, checked: true, bgColor: 'bg-teal-400' },
+    { name: 'stock', label: 'P/S Stock Simulate', index: 6, disabled: true, checked: true, bgColor: 'bg-blue-600' },
     { name: 'wip', label: 'WIP', index: 7, disabled: true, checked: false, bgColor: 'bg-gray-400' },
     { name: 'po', label: 'PO', index: 8, disabled: false, checked: false, bgColor: 'bg-teal-500' },
-    { name: 'stock', label: 'P/S Stock', index: 9, disabled: false, checked: false, bgColor: 'bg-orange-500' },
+        // { name: 'stock', label: 'P/S Stock', index: 9, disabled: false, checked: false, bgColor: 'bg-orange-500' },
     ],
     privilegeFilter: {
-        employee: ['plan', 'doplan', 'stocksimulate'],
-        supplier: ['doplan', 'doact']
+        employee: ['plan', 'do', 'stock'],
+        supplier: ['do', 'doact']
     },
     dayOfWeek: [
         "Sun",
@@ -50,22 +50,55 @@ const initialState = {
     },
     jwt: '',
     privilege: [],
-    typeAccount: 'employee'
+    typeAccount: 'employee',
+    partMaster: [],
+    venderMaster: []
+
 }
 
 const IndexReducer = (state = initialState, action) => {
     switch (action.type) {
+
+        case 'SET_PART_MASTER':
+            return {
+                ...state,
+                partMaster: action.payload
+            }
+        case 'SET_VENDER_MASTER':
+            return {
+                ...state,
+                venderMaster: action.payload
+            }
+        case 'INIT_LOGIN':
+            var filters = state.filters;
+            filters.map((title, index) => {
+                if (title.disabled == false) {
+                    filters[index]['checked'] = false;
+                }
+                if (state.privilegeFilter[state.typeAccount].includes(title.name)) {
+                    filters[index]['checked'] = true;
+                } else {
+                    filters[index]['checked'] = false;
+                }
+            })
+            action.payload.filters = filters;
+            return {
+                ...state,
+                ...action.payload
+            }
         case 'TYPE_ACCOUNT':
             if (action.payload == 'employee') {
-                var index = state.titles.findIndex((item) => item.name == 'plan');
-                state.titles[index].checked = true;
-                index = state.titles.findIndex((item) => item.name == 'stocksimulate');
-                state.titles[index].checked = true;
+                console.log(state.filters)
+                var index = state.filters.findIndex((item) => item.name == 'plan');
+                state.filters[index].checked = true;
+                index = state.filters.findIndex((item) => item.name == 'stock');
+                state.filters[index].checked = true;
+                console.log(state.filters)
             } else {
-                var index = state.titles.findIndex((item) => item.name == 'plan');
-                state.titles[index].checked = false;
-                index = state.titles.findIndex((item) => item.name == 'stocksimulate');
-                state.titles[index].checked = false;
+                var index = state.filters.findIndex((item) => item.name == 'plan');
+                state.filters[index].checked = false;
+                index = state.filters.findIndex((item) => item.name == 'stock');
+                state.filters[index].checked = false;
             }
             return {
                 ...state,
@@ -114,36 +147,20 @@ const IndexReducer = (state = initialState, action) => {
                 login: false,
                 id: ''
             }
-        case 'INIT_LOGIN':
-            var titles = state.titles;
-            titles.map((title, index) => {
-                if (title.disabled == false) {
-                    titles[index]['checked'] = false;
-                }
-                if (state.privilegeFilter[state.typeAccount].includes(title.name)) {
-                    titles[index]['checked'] = true;
-                } else {
-                    titles[index]['checked'] = false;
-                }
-            })
-            action.payload.titles = titles;
-            return {
-                ...state,
-                ...action.payload
-            }
+
         case 'INIT_LOGOUT':
-            var titles = state.titles;
-            titles.map((title, index) => {
+            var filters = state.filters;
+            filters.map((title, index) => {
                 if (title.disabled == false) {
-                    titles[index]['checked'] = false;
+                    filters[index]['checked'] = false;
                 }
                 if (state.privilegeFilter[state.typeAccount].includes(title.name)) {
-                    titles[index]['checked'] = true;
+                    filters[index]['checked'] = true;
                 } else {
-                    titles[index]['checked'] = false;
+                    filters[index]['checked'] = false;
                 }
             })
-            action.payload.titles = titles;
+            action.payload.filters = filters;
             return {
                 ...state,
                 ...action.payload
@@ -165,10 +182,9 @@ const IndexReducer = (state = initialState, action) => {
                 division: '',
                 module: ''
             }
-        case 'CHECKED_FILTER':
-            var index = state.titles.findIndex((item) => item.name == action.name);
-            console.log(state.titles)
-            state.titles[index].checked = action.checked;
+        case 'UPDATE_FILTER':
+            var index = state.filters.findIndex((item) => item.name == action.name);
+            state.filters[index].checked = action.checked;
             return {
                 ...state
             }

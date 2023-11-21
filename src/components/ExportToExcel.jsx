@@ -10,10 +10,15 @@ function ExportToExcel(props) {
     const reducer = useSelector(state => state.mainReducer);
     var ExcelName = '';
     if (reducer.typeAccount == 'employee') {
+        // if (vd == '-') {
+        //     ExcelName = `DO-BUYER-${buyer}-ALL-${rn}`;
+        // } else {
+        //     ExcelName = `DO-BUYER-${buyer}-${vd}-${rn}`;
+        // }
         if (vd == '-') {
-            ExcelName = `DO-BUYER-${buyer}-ALL-${rn}`;
+            ExcelName = `DO-BUYER-ALL-${rn}`;
         } else {
-            ExcelName = `DO-BUYER-${buyer}-${vd}-${rn}`;
+            ExcelName = `DO-BUYER-${vd}-${rn}`;
         }
     } else {
         ExcelName = `DO-${vd}-${rn}`;
@@ -49,24 +54,22 @@ function ExportToExcel(props) {
                 </tr>
                 {
                     data.map((item, index) => {
-                        // console.log(item.date)
-                        // var date = reducer.typeAccount == 'employee' ? item.date : moment(item.date,'DD/MM/YYYY').format('YYYYMMDD')
-                        // console.log(date)
+                        // console.log(item)
                         var date = item.date;
-                        if(date.indexOf('/') !== -1){
-                            date = moment(item.date,'DD/MM/YYYY').format('YYYYMMDD');
-                        }
-                        return <tr>
-                            <th>{item.part}</th>
+                        // if (date.indexOf('/') !== -1) {
+                            date = moment(item.date).format('YYYYMMDD');
+                        // }
+                        return <tr key={index}>
+                            <th>{item.partNo}</th>
                             <th>{date}</th>
                             {
                                 reducer.typeAccount == 'employee' && <th>{parseFloat(item.plan).toLocaleString('en')}</th>
                             }
-                            <th>{parseFloat(item.doPlan).toLocaleString('en')}</th>
+                            <th>{parseFloat(item?.do).toLocaleString('en')}</th>
                             {
-                                reducer.typeAccount == 'employee' && <th>{parseFloat(item.stockSim).toLocaleString('en')}</th>
+                                reducer.typeAccount == 'employee' && <th>{parseFloat(item.stock).toLocaleString('en')}</th>
                             }
-                            <th>{item.vdCode}</th>
+                            <th>{item.vender}</th>
                         </tr>
                     })
                 }

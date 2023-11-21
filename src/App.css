@@ -130,6 +130,7 @@ thead th.stuck {
     left: 0;
     /* z-index: 99; */
 }
+
 #tbNew thead {
     z-index: 999 !important;
 }
@@ -139,6 +140,7 @@ thead th.stuck * {
     font-weight: 400;
     /* color: whitesmoke !important; */
 }
+
 td.stuck {
     background: #1f1f1f;
 }
@@ -286,7 +288,7 @@ html,
     /* font-weight: 600; */
 }
 
-.box-title > .title.planVal {
+.box-title>.title.planVal {
     color: #ffffff !important;
     /* background: #eb5425; */
     background: #1e86ee;
@@ -341,14 +343,14 @@ html,
 }
 
 .night .box-part-detail {
-    color:#ffffff;
+    color: #ffffff;
 }
 
 .box-title .title.stockSimVal {
     color: #ffffff !important;
     background: #eb5425;
     /* padding: .25rem .5rem 0.2rem .5rem; */
-    
+
     border-radius: 14px;
 }
 
@@ -481,6 +483,7 @@ h2.doLineHorizontal .doPlan {
 .night .vender-name {
     color: #4effca;
 }
+
 /* .vender-name {
     font-size: 10px;
 }
@@ -820,7 +823,7 @@ h2.doLineHorizontal .doPlan {
 }
 
 .night #tbNew .stockVal {
-    color: #c0c0c0 ;
+    color: #c0c0c0;
 }
 
 .night #tbNew .part-divider {
@@ -832,8 +835,9 @@ h2.doLineHorizontal .doPlan {
 .night #tbContent thead td,
 .night #tbContent tbody td {
     background: white;
-    color:black;
+    color: black;
 }
+
 /* .night *  {
     color:white;
 } */
@@ -843,4 +847,98 @@ h2.doLineHorizontal .doPlan {
 
 .tdMaster:hover td {
     background: #e8f4ff !important;
+}
+
+/* ************** NEW VERSION *************** */
+/* ************** NEW VERSION *************** */
+/* ************** NEW VERSION *************** */
+td.isHoliday,
+td.isHoliday {
+    background: #181818 !important;
+}
+
+thead td.isFix {
+    background: #ef4444;
+}
+
+thead td.isRun {
+    background: #0fae76;
+}
+
+tbody td.td-line {
+    background: #181818;
+    border-top: 1px solid #303030;
+    border-bottom: 1px solid #303030;
+}
+
+.box-title .title.po {
+    color: #ffffff !important;
+    background: #6bb417;
+    border-radius: 14px;
+}
+
+.box-title .title.do {
+    color: #ffffff !important;
+    background: #0fae76;
+    border-radius: 14px;
+}
+
+.box-title .title.stock {
+    color: #ffffff !important;
+    background: #eb5425;
+    border-radius: 14px;
+}
+
+.box-title .title.plan {
+    color: #ffffff !important;
+    background: #1e86ee;
+    border-radius: 14px;
+}
+
+tbody td.isFix {
+    background: #ef44441c !important;
+}
+
+tbody td.isRun {
+    background: #76c48c42 !important;
+}
+
+
+td.gradient {
+    background: linear-gradient(-90deg, #0fae76, #10c284, #da4646, #ef4444);
+    background-size: 400% 400%;
+    animation: gradient 2s ease infinite;
+    height: 100vh;
+}
+
+td.gradientTbody {
+    background: linear-gradient(-90deg, #0fae761c, #10c2841c, #da46461c, #ef44441c);
+    background-size: 400% 400%;
+    animation: gradient 2s ease infinite;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.buget-do {
+    z-index: 0 !important;
+}
+
+.buget-do>span {
+    position: absolute;
+    left: 10px;
+    top: 0px;
+    padding: 10px 18px 10px 16px;
+
 }
