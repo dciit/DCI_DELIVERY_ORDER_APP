@@ -187,6 +187,14 @@ function DOPage() {
                 PO = [];
             }
             // console.log(item)
+            if(moment(item.date).format('DD') == '01'){
+                PLAN.push({ date: item.date, value: 0, prev: 0 });
+                PICKLIST.push({ date: item.date, value: 0 });
+                DO.push({ date: item.date, value: 0 });
+                STOCK.push({ date: item.date, value: 0 });
+                DOACT.push({ date: item.date, value: 0 });
+                PO.push({ date: item.date, value: 0 });
+            }
             PLAN.push({ date: item.date, value: item.plan, prev: item.planPrev });
             PICKLIST.push({ date: item.date, value: item.pickList });
             DO.push({ date: item.date, value: item.do });
