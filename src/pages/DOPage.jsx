@@ -44,8 +44,6 @@ function DOPage() {
     var runDate = moment(fixDate.add(1, 'days')).add(7, 'days')
     const [FirstTime, setFirstTime] = useState(true);
     const [themeSys, setThemeSys] = useState(true); // True is Night , Flase is Light
-
-
     const [DOResult, setDOResult] = useState();
     const [columns, setColumns] = useState([]);
     const [data, setData] = useState([]);
@@ -55,6 +53,8 @@ function DOPage() {
     const [supplierSelected, setSupplierSelected] = useState('');
     const [venderDelivery, setVenderDelivery] = useState({});
     const reduxPartMaster = useSelector(state => state.mainReducer.partMaster);
+    const typeAccout = useSelector(state => state.mainReducer?.typeAccount);
+    const username = useSelector(state => state.mainReducer?.id);
     useEffect(() => {
         if (FirstTime) {
             init();
@@ -70,10 +70,22 @@ function DOPage() {
         const fetchBuyers = await API_GET_BUYER();
         setBuyers(fetchBuyers);
         let vdcode = '';
-        const fetchSuppliers = await API_GET_SUPPLIER_BY_BUYER({ code: buyerSelected });
+        let fetchSuppliers = await API_GET_SUPPLIER_BY_BUYER({ code: buyerSelected });
         if (supplierSelected == '') {
-            setSupplierSelected(fetchSuppliers[0]?.vdcode)
-            vdcode = fetchSuppliers[0]?.vdcode;
+            console.log()
+            if (typeAccout == 'supplier') {
+                var supplierCode = fetchSuppliers.filter((v, k) => v.vdcode == username);
+                if (typeof supplierCode != 'object' || !Object.keys(supplierCode).length) {
+                    alert(`ไม่พบข้อมูลของ Supplier : ${username}`);
+                    return false;
+                }
+                setSupplierSelected(supplierCode[0]?.vdcode)
+                vdcode = supplierCode[0]?.vdcode;
+                fetchSuppliers = supplierCode;
+            } else {
+                setSupplierSelected(fetchSuppliers[0]?.vdcode)
+                vdcode = fetchSuppliers[0]?.vdcode;
+            }
         }
         setSuppliers(fetchSuppliers);
         setColumns(await FN_SET_COLUMN());
@@ -109,7 +121,7 @@ function DOPage() {
                 let filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'plan')).length;
                 if (filter) {
                     DATA_FORMAT.push({
-                        key: true,
+                        key: typeAccout == 'supplier' ? false : true,
                         vender: item.vender,
                         part: PART_REF,
                         classs: 'planVal',
@@ -130,7 +142,7 @@ function DOPage() {
                 filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'do')).length;
                 if (filter) {
                     DATA_FORMAT.push({
-                        key: false,
+                        key: typeAccout == 'supplier' ? true : false,
                         part: PART_REF,
                         classs: 'doVal',
                         name: 'do',
@@ -187,7 +199,7 @@ function DOPage() {
                 PO = [];
             }
             // console.log(item)
-            if(moment(item.date).format('DD') == '01'){
+            if (moment(item.date).format('DD') == '01') {
                 PLAN.push({ date: item.date, value: 0, prev: 0 });
                 PICKLIST.push({ date: item.date, value: 0 });
                 DO.push({ date: item.date, value: 0 });
@@ -231,6 +243,7 @@ function DOPage() {
         return column;
     }
     function VIEW_DO(row, item) {
+        // console.log(item)
         let val = item.value;
         let date = moment(item.date);
         let vender = row.vender;
@@ -528,7 +541,6 @@ function DOPage() {
                                             </>
                                         )}
                                         itemContent={(index, item) => {
-                                            // console.log(item)
                                             let title = '';
                                             if (item.name == 'plan') {
                                                 title = <span class={`title ${item.name}`}>Prod Plan (Plan * BOM)</span>;
