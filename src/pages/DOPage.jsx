@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import '../App.css'
 import { Box, CircularProgress, Divider, Table, TableBody, TableCell, TableContainer, TableRow, TableHead, Paper, Button, Select, Stack, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Avatar, IconButton, InputBase, Typography, FormGroup, FormControlLabel, Checkbox, FormLabel, Grid, TextField, List, ListItemButton, ListItemIcon, Collapse, ListItemText, tableCellClasses, Snackbar, Alert, LinearProgress, Badge } from '@mui/material'
-import { API_GET_BUYER, API_GET_DO, API_GET_SUPPLIER_BY_BUYER, API_RUN_DO, ServiceGetBuyer, ServiceGetHisrtoryById, ServiceGetListSupplier, ServiceGetPlan, ServiceGetSupplier, ServiceJWT, ServiceRunDo, UPDATE_DO } from '../Services'
+import { API_GET_BUYER, API_GET_DO, API_GET_SUPPLIER_BY_BUYER, API_GET_VENDER_MASTERS, API_RUN_DO } from '../Services'
 import moment from 'moment/moment'
 import LoginPage from '../components/LoginPage'
 import { useDispatch, useSelector } from 'react-redux'
@@ -20,6 +20,7 @@ import { NumericFormat } from 'react-number-format'
 import DialogFilter from '../components/DialogFilter'
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 function DOPage() {
+    let prodLead = 0;
     const [loading, setLoading] = useState(true);
     const [openApprDo, setOpenApprDo] = useState(false);
     const [disabledBtnApprDo, setDisabledBtnApprDo] = useState(false);
@@ -29,9 +30,10 @@ function DOPage() {
     const [openFilter, setOpenFilter] = useState(false);
     const [openEditDOVal, setOpenEditDOVal] = useState(false);
     const reducer = useSelector(state => state.mainReducer);
+    let VdMasters = reducer.venderMaster;
     const dispatch = useDispatch();
-    const [runcode, setRunCode] = useState('');
-    const [buyer, setBuyer] = useState([]);
+    // const [runcode, setRunCode] = useState('');
+    // const [buyer, setBuyer] = useState([]);
     const [doEdit, setDoEdit] = useState(null);
     const [loadingConfEditDo, setLoadingConfEditDo] = useState(false);
     const [loadingRunDO, setLoadingRunDO] = useState(false);
@@ -42,7 +44,7 @@ function DOPage() {
     var endDate = moment().add(9, 'days').format('YYYY-MM-DD');
     var fixDate = moment().add(2, 'days');
     var runDate = moment(fixDate.add(1, 'days')).add(7, 'days')
-    const [FirstTime, setFirstTime] = useState(true);
+    const [once, setOnce] = useState(false);
     const [themeSys, setThemeSys] = useState(true); // True is Night , Flase is Light
     const [DOResult, setDOResult] = useState();
     const [columns, setColumns] = useState([]);
@@ -55,69 +57,92 @@ function DOPage() {
     const reduxPartMaster = useSelector(state => state.mainReducer.partMaster);
     const typeAccout = useSelector(state => state.mainReducer?.typeAccount);
     const username = useSelector(state => state.mainReducer?.id);
+    const [vendersMaster, setVendersMaster] = useState([]);
+    const [venderSelected, setVenderSelected] = useState([]);
     useEffect(() => {
-        if (FirstTime) {
+        if (!once) {
             init();
-            // setShowBtnRunDo(true);
-            // GetSupplier(buyerSelected);
-            // GetBuyer();
-            // SetColDay();
-            // setFirstTime(false);
+            setOnce(true);
         }
-    }, [reducer.login, openEditDOVal]);
+    }, [once]);
+
     async function init() {
+        await initBuyer();
+        await initContent();
+    }
+
+    async function initContent() {
         setLoading(true);
-        const fetchBuyers = await API_GET_BUYER();
-        setBuyers(fetchBuyers);
-        let vdcode = '';
-        let fetchSuppliers = await API_GET_SUPPLIER_BY_BUYER({ code: buyerSelected });
-        if (supplierSelected == '') {
-            console.log()
-            if (typeAccout == 'supplier') {
-                var supplierCode = fetchSuppliers.filter((v, k) => v.vdcode == username);
-                if (typeof supplierCode != 'object' || !Object.keys(supplierCode).length) {
-                    alert(`ไม่พบข้อมูลของ Supplier : ${username}`);
-                    return false;
-                }
-                setSupplierSelected(supplierCode[0]?.vdcode)
-                vdcode = supplierCode[0]?.vdcode;
-                fetchSuppliers = supplierCode;
-            } else {
-                setSupplierSelected(fetchSuppliers[0]?.vdcode)
-                vdcode = fetchSuppliers[0]?.vdcode;
-            }
-        }
-        setSuppliers(fetchSuppliers);
-        setColumns(await FN_SET_COLUMN());
-        const initPlan = await FN_INIT_PLAN(buyerSelected, supplierSelected != '' ? supplierSelected : vdcode);
+        const initPlan = await FN_INIT_PLAN(buyerSelected, supplierSelected);
+        setLoading(false);
+        setVenderSelected(initPlan);
         setRunningCode(initPlan.nbr);
         setData(initPlan.data);
         setVenderDelivery(initPlan.venderDelivery);
-        const initData = await FN_INIT_DATA(initPlan.data);
+        await FN_INIT_DATA(initPlan.data);
         dispatch({ type: 'SET_PART_MASTER', payload: initPlan.partMaster })
         dispatch({ type: 'SET_VENDER_MASTER', payload: initPlan.venderMaster });
-        setLoading(false);
+        setColumns(await FN_SET_COLUMN(initPlan.venderSelected));
     }
+
+    useEffect(() => {
+        if (typeof DOResult != 'undefined' && Object.keys(DOResult).length) {
+            console.log('effect ')
+            console.log(DOResult)
+        }
+    }, [DOResult])
+
+    async function initBuyer() {
+        var initBuyer = await API_GET_BUYER();
+        setBuyers(initBuyer);
+    }
+
+    useEffect(() => {
+        if (buyers.length) {
+            initSupplier();
+        }
+    }, [buyers]);
+
+    useEffect(() => {
+        if (Object.keys(suppliers).length && supplierSelected == '') {
+            setSupplierSelected(suppliers[0]?.vdcode)
+        }
+    }, [suppliers]);
+
+    async function initSupplier() {
+        console.log('init suppliers ...');
+        const listSuppliers = await API_GET_SUPPLIER_BY_BUYER({ code: buyerSelected });
+        if (reducer.typeAccount == 'supplier') {
+            setSuppliers(listSuppliers.filter((v) => (v.vdcode == reducer.id)));
+        } else {
+            setSuppliers(listSuppliers);
+        }
+        console.log('end init suppliers ...')
+    }
+
     async function FN_INIT_PLAN(buyer, vd) {
         const res = await API_GET_DO(buyer, vd, startDate, endDate);
         return res;
     }
     function FN_INIT_DATA(API_DATA) {
+        // console.log('start init format data')
         if (typeof API_DATA == 'undefined') {
             API_DATA = data;
         }
         let DATA_FORMAT = [];
+        // let PART_REF = API_DATA[0].partNo;
         let PART_REF = API_DATA[0].partNo;
         let PLAN = [];
-        let PLAN_PREV = [];
+        // let PLAN_PREV = [];
         let DO = [];
         let STOCK = [];
         let DOACT = [];
         let PICKLIST = [];
         let PO = [];
-        API_DATA.map((item) => {
+        let loop = 0;
+        API_DATA.map((item, index) => {
             let PART = item.partNo;
-            if (PART_REF != PART) {
+            if (PART_REF != PART || ([...new Set(API_DATA.map(item => item.partNo))].length == 1) && index == (Object.keys(API_DATA).length) - 1) {
                 let filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'plan')).length;
                 if (filter) {
                     DATA_FORMAT.push({
@@ -181,7 +206,6 @@ function DOPage() {
                         data: PO
                     });
                 }
-
                 DATA_FORMAT.push({
                     key: false,
                     part: PART_REF,
@@ -191,7 +215,7 @@ function DOPage() {
                 });
                 PART_REF = PART;
                 PLAN = [];
-                PLAN_PREV = [];
+                // PLAN_PREV = [];
                 DO = [];
                 STOCK = [];
                 DOACT = [];
@@ -213,12 +237,18 @@ function DOPage() {
             STOCK.push({ date: item.date, value: item.stock });
             DOACT.push({ date: item.date, value: item.doAct });
             PO.push({ date: item.date, value: item.po });
+            loop++;
         });
+        console.log(DATA_FORMAT)
         setDOResult(DATA_FORMAT);
         return DATA_FORMAT;
     }
-    function FN_SET_COLUMN() {
+    function FN_SET_COLUMN(vdMaster) {
         var column = [];
+        // console.log(vdMaster)
+        prodLead = vdMaster[0].vdProdLead - 1;
+        endDate = moment().add((prodLead + 7), 'days').format('YYYY-MM-DD');
+        console.log(endDate)
         var sDate = moment(startDate);
         var fDate = moment(endDate);
         while (!sDate.isSame(fDate)) {
@@ -244,6 +274,10 @@ function DOPage() {
     }
     function VIEW_DO(row, item) {
         // console.log(item)
+        prodLead = VdMasters[0].vdProdLead - 1;
+        fixDate = moment().add(prodLead, 'days');
+        runDate = moment(fixDate.add(1, 'days')).add(7, 'days')
+        // let vdMaster = suppliers.filter((o,i)=>o.)
         let val = item.value;
         let date = moment(item.date);
         let vender = row.vender;
@@ -257,7 +291,7 @@ function DOPage() {
         var dtLoop = moment(item.date);
         var dtNow = moment()
         let isGradient = false;
-        if (dtLoop.format('YYYYMMDD') == dtNow.add('days', 2).format('YYYYMMDD')) {
+        if (dtLoop.format('YYYYMMDD') == dtNow.add('days', prodLead).format('YYYYMMDD')) {
             if (moment().format('YYYYMMDD HH:mm:ss') < moment().format('YYYYMMDD 15:01:00')) {
                 isGradient = true;
             }
@@ -284,7 +318,7 @@ function DOPage() {
         var dtLoop = moment(item.date);
         var dtNow = moment()
         let isGradient = false;
-        if (dtLoop.format('YYYYMMDD') == dtNow.add('days', 2).format('YYYYMMDD')) {
+        if (dtLoop.format('YYYYMMDD') == dtNow.add('days', prodLead).format('YYYYMMDD')) {
             if (moment().format('YYYYMMDD HH:mm:ss') < moment().format('YYYYMMDD 15:01:00')) {
                 isGradient = true;
             }
@@ -318,9 +352,6 @@ function DOPage() {
                 setOpenSnackBar(true);
                 setOpenApprDo(false);
                 location.reload();
-                // } else {
-                //     setMsgWaitApprDo('ไม่สามารถออกแผน Delivery Order ได้ กรุณาติดต่อทีมงาน IT (เบียร์ 250)');
-                // }
                 setDisabledBtnApprDo(false);
                 setLoadingRunDO(false);
             } catch (e) {
@@ -405,9 +436,6 @@ function DOPage() {
                                         }
                                     }}
                                 >
-                                    {/* {
-                                        reducer.typeAccount == 'employee' && <MenuItem value='-'>--- ALL ---</MenuItem>
-                                    } */}
                                     {
                                         suppliers.map((item, index) => {
                                             return <MenuItem value={item.vdcode} key={index}>{item.vdname} ({item.vdcode})</MenuItem>
@@ -415,11 +443,11 @@ function DOPage() {
                                     }
                                 </Select>
                             </FormControl>
-                            <ButtonItem handle={init} handleKey={supplierSelected} label='ค้นหา' icon={<SearchIcon className='md:text-[1.5vw] lg:text-[1vw]  mr-1' />} />
+                            <ButtonItem handle={initContent} handleKey={supplierSelected} label='ค้นหา' icon={<SearchIcon className='md:text-[1.5vw] lg:text-[1vw]  mr-1' />} />
                         </Grid>
                     </Grid>
-                    <div className='bg-[#181818] text-[#ffffffc7] pl-3 py-2 font-thin flex justify-between line-b'>
-                        <div className='flex items-center gap-2'>
+                    <div className='bg-[#181818] text-[#ffffffc7] pl-3 py-2 font-thin flex   line-b'>
+                        <div className='flex items-center gap-2 w-[40%] md:w-[50%] lg:w-[40%]'>
                             <DiamondIcon className='text-yellow-300 ' />
                             <span>&nbsp;D/O RUNNING : </span>
                             <span className='text-[#4effca]'>{RunningCode != '' ? RunningCode : '-'}</span>
@@ -427,34 +455,35 @@ function DOPage() {
                                 reducer.privilege.some(item => (item.refCode == 'BTN_RUN_DO' && item.note == 'true')) && <ButtonItem classs='animate-bounce' handle={setOpenApprDo} handleKey={true} icon={<ElectricBoltIcon className='md:text-[1.5vw] lg:text-[1vw] mr-1' />} label='ออกแผน (แก้ไข)' />
                             }
                         </div>
-                        <Stack direction={'row'} gap={1}>
+                        <div className='w-[40%]  md:w-[25%] lg:w-[40%]'>
                             {
-                                reducer.privilege.some(item => (item.refCode == 'FILTER_DO' && item.note == 'true')) &&
-                                <div>
-                                    <div className={`bg-[#4effca] text-[#080b0f] w-fit rounded-[8px] px-[8px] pt-[0px] pb-[4px] cursor-pointer transition ease-in-out delay-50  hover:-translate-y-1 hover:scale-105 hover:bg-[#4effca] hover:text-[#080b0f] shadow-mtr`} onClick={() => {
-                                        setOpenFilter(true);
-                                    }}>
-                                        <Stack alignItems={'center'} direction={'row'}>
-                                            <FilterAltOffOutlinedIcon className='md:text-[1.5vw] lg:text-[1vw] mr-1' />
-                                            <span className='text-center'>กรองข้อมูล</span>
-                                        </Stack>
-                                    </div>
-                                </div>
+                                moment() < moment(moment().format('YYYY-MM-DD 15:01:00')) ?
+                                    <div className='bg-[#181818] text-center'>
+                                        <Typography className='text-white' variant='caption'>WAIT 3PM RUN D/O</Typography>
+                                        <LinearProgress className='h-[15px]' />
+                                    </div> : ''
                             }
-                            <ExportToExcel data={data} buyer={buyerSelected} vd={supplierSelected} rn={RunningCode} />
-                        </Stack>
+                        </div>
+                        <div className='w-[40%]  md:w-[25%] flex justify-end items-center'>
+                            <Stack direction={'row'} gap={1}>
+                                {
+                                    reducer.privilege.some(item => (item.refCode == 'FILTER_DO' && item.note == 'true')) &&
+                                    <div>
+                                        <div className={`bg-[#4effca] text-[#080b0f] w-fit rounded-[8px] px-[8px] pt-[0px] pb-[4px] cursor-pointer transition ease-in-out delay-50  hover:-translate-y-1 hover:scale-105 hover:bg-[#4effca] hover:text-[#080b0f] shadow-mtr`} onClick={() => {
+                                            setOpenFilter(true);
+                                        }}>
+                                            <Stack alignItems={'center'} direction={'row'}>
+                                                <FilterAltOffOutlinedIcon className='md:text-[1.5vw] lg:text-[1vw] mr-1' />
+                                                <span className='text-center'>กรองข้อมูล</span>
+                                            </Stack>
+                                        </div>
+                                    </div>
+                                }
+                                <ExportToExcel data={data} buyer={buyerSelected} vd={supplierSelected} rn={RunningCode} />
+                            </Stack>
+                        </div>
                     </div>
-                    {
-                        moment() < moment(moment().format('YYYY-MM-DD 15:01:00')) ? <div className=' pl-6 flex bg-[#181818]'>
-                            <div className={`w-[${400}px]`}></div>
-                            <div className={`w-[675px]`}></div>
-                            <div className={`w-[75px] text-center`}>
-                                <Typography className='text-white' variant='caption'>WAIT 3PM</Typography>
-                                <LinearProgress className='h-[15px]' />
-                                <Typography className='text-white' variant='caption'>RUN D/O</Typography>
-                            </div>
-                        </div> : ''
-                    }
+
                     <div className='flex w-full h-[95%] box-content'>
                         <div className={`h-[95%] w-full text-center pl-6`}>
                             {
@@ -476,6 +505,9 @@ function DOPage() {
                                                     </td>
                                                     {
                                                         columns.map((column, i) => {
+                                                            prodLead = VdMasters[0].vdProdLead - 1;
+                                                            fixDate = moment().add(prodLead, 'days');
+                                                            runDate = moment(fixDate.add(1, 'days')).add(7, 'days');
                                                             let ThisDay = moment();
                                                             let LoopDay = moment(column.date);
                                                             let IsHoliday = ['SAT', 'SUN'].includes(moment(column.date).format('ddd').toUpperCase());
@@ -488,7 +520,7 @@ function DOPage() {
                                                                 _ThStartMonth = <TableCell rowSpan={2} className='text-center w-[200px] start-[200px] text-[1.5rem] stuck text-white thMonth' style={{ width: column.width, padding: 0, height: column.height, borderRight: '1px solid #e0e0e0 !important' }}>{moment(column.date).format('MMM').toUpperCase()}</TableCell>
                                                             }
                                                             let isGradient = false;
-                                                            if (dtLoop.format('YYYYMMDD') == dtNow.add('days', 2).format('YYYYMMDD')) {
+                                                            if (dtLoop.format('YYYYMMDD') == dtNow.add('days', prodLead).format('YYYYMMDD')) {
                                                                 if (moment().format('YYYYMMDD HH:mm:ss') < moment().format('YYYYMMDD 15:01:00')) {
                                                                     isGradient = true;
                                                                 }
@@ -520,7 +552,7 @@ function DOPage() {
                                                             var dtLoop = moment(column.date);
                                                             var dtNow = moment()
                                                             let isGradient = false;
-                                                            if (dtLoop.format('YYYYMMDD') == dtNow.add('days', 2).format('YYYYMMDD')) {
+                                                            if (dtLoop.format('YYYYMMDD') == dtNow.add('days', prodLead).format('YYYYMMDD')) {
                                                                 if (moment().format('YYYYMMDD HH:mm:ss') < moment().format('YYYYMMDD 15:01:00')) {
                                                                     isGradient = true;
                                                                 }
@@ -591,25 +623,13 @@ function DOPage() {
                                         }}
                                     />
                             }
-
-                            {/* {
-                                loading ? <div className='flex flex-col justify-center items-center h-full loading'><CircularProgress style={{ color: '#4effca' }} /><span className=' mt-3'>กำลังโหลดข้อมูล . . .</span></div> : <>
-                                    {
-                                        !DOResult.length ? <div className=' h-full flex items-center justify-center text-not-found'>ไม่พบข้อมูลการผลิต . . . </div> :
-                                            <>
-                                            </>
-                                    }
-                                </>
-                            } */}
                         </div >
                     </div>
                     <DialogRunDO handle={() => confirmApprDo(true)} open={openApprDo} close={setOpenApprDo} loading={loadingRunDO} setLoading={setLoadingRunDO} />
-                    {/* <DialogRunDONew handle={() => confirmApprDo(false)} open={openApprDoNew} close={setOpenApprDoNew} loading={loadingRunDO} setLoading={setLoadingRunDO} /> */}
                     <DialogFilter open={openFilter} close={setOpenFilter} refresh={FN_INIT_DATA} />
                     <Dialog open={openEditDOVal} onClose={() => setOpenEditDOVal(loadingConfEditDo)} fullWidth maxWidth={'sm'}>
                         <DialogTitle>แก้ไขตัวเลข D/O</DialogTitle>
                         <DialogContent dividers>
-                            {/* <TextField label='Supplier' focused size='small' value={editContent?.vdCode} inputProps={{ readOnly: true }} /> */}
                             <div className='py-2'>
                                 <p>ID : {doEdit?.id}</p>
                                 <p>ร้านค้า : {doEdit?.venderName} ({doEdit?.vender})</p>
@@ -644,7 +664,6 @@ function DOPage() {
                             ออกแผน Delivery Order สำเร็จแล้ว
                         </Alert>
                     </Snackbar>
-
                 </div > : <LoginPage />
             }
         </>

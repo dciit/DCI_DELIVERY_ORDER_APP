@@ -8,10 +8,9 @@ import AirportShuttleIcon from '@mui/icons-material/AirportShuttle';
 import { useSelector } from 'react-redux';
 import Select from 'react-select'
 import moment from 'moment';
-// import ExportToExcel from '../components/ExportToExcel';
+import ExportToExcel from '../components/ExportToExcel';
 function SupplierPage() {
-    const headers = [
-        'D/O Date', 'Drawing No', 'Cm', 'Decription', 'D/O NO', 'DEL.DATE', 'TIME', 'W/H NO', 'DEL.PLACE', 'QTY/BOX', 'UNIT', 'D/O QTY', 'R/C QTY', 'REMAIN', 'STATUS'
+    const headers = ['Drawing No', 'Cm', 'Decription', 'DEL.DATE', 'TIME', 'W/H NO', 'DEL.PLACE', 'QTY/BOX', 'UNIT', 'D/O QTY', 'PO (Recomment)', 'R/C QTY', 'REMAIN', 'STATUS'
     ]
     const [sDateFilter, setSDateFilter] = useState(moment().format('YYYY-MM-DD'));
     const [fDateFilter, setFDateFilter] = useState(moment().format('YYYY-MM-DD'));
@@ -19,13 +18,16 @@ function SupplierPage() {
     const [supplier, setSupplier] = useState([]);
     const [master, setMaster] = useState([]);
     const [supplierData, setSupplierData] = useState([]);
+    const [listPO, setListPO] = useState([]);
     const [loadingData, setLoadingData] = useState(true);
     const [dataDefault, setDataDefault] = useState([]);
     const [themeSys, setThemeSys] = useState(true);
     const reducer = useSelector(state => state.mainReducer);
     const [textSearch, setTextSearch] = useState('');
-    // const [running, setRunning] = useState('');
-    // const [buyer, setBuyer] = useState(reducer.id);
+    const [initData, setInitData] = useState([]);
+    let rData = [];
+    const [running, setRunning] = useState('');
+    const [buyer, setBuyer] = useState(reducer.id);
     const filterData = (search) => {
         setTextSearch(search);
         const filteredRows = dataDefault.filter((row) => {
@@ -37,53 +39,6 @@ function SupplierPage() {
             setSupplierData(dataDefault)
         }
     }
-    // function getListSupplier() {
-    //     return new Promise(resolve => {
-    //         axios.get(import.meta.env.VITE_BASE_DELIVERY_ORDER + '/getSupplier/all').then((res) => {
-    //             var vdSelect = res.data.map((item, index) => (
-    //                 { value: item.VD_CODE, label: (item.VD_DESC + ' (' + item.VD_CODE + ')') }
-    //             ));
-    //             vdSelect = vdSelect.filter(function (el) {
-    //                 return el.value != '' && el.value != null
-    //             })
-    //             vdSelect = reducer.typeAccount == 'supplier' ? vdSelect.filter(item => item.value == reducer.id) : vdSelect;
-    //             setSupplier(vdSelect);
-    //             if (reducer.filter.supplier.vender == '' || reducer.filter.supplier.vender != reducer.id) {
-    //                 dispatch({ type: 'SUPPLIER_PAGE_SET_FILTER', payload: vdSelect[0] })
-    //             }
-    //             resolve(vdSelect[0].value)
-    //         }).catch((error) => {
-    //             console.log(error)
-    //         })
-    //     })
-    // }
-
-    // function getPlan() {
-    // setLoadingData(true);
-    // ServiceGetPlan(reducer.filter.supplier.vender.value).then((res) => {
-    //     var sDate = moment(moment(sDateFilter).format('YYYYMMDD')).format('YYYYMMDD');
-    //     var fDate = moment(moment(fDateFilter).format('YYYYMMDD')).format('YYYYMMDD');
-    //     var dataIsShow = res.data.data.filter(x => {
-    //         return moment(x.date).isBetween(sDate, fDate, null, '[]');
-    //     });
-    //     var NewData = dataIsShow.sort((a, b) => (a.date > b.date) ? 1 : -1).filter(item => {
-    //         if (res.data.master != null) {
-    //             item.partDesc = res.data.master[item.part].partDesc
-    //         }
-    //         item.date = moment(item.date, 'YYYYMMDD').format('DD/MM/YYYY');
-    //         return item.doPlan > 0
-    //     });
-    //     setRunning(res.data.runningCode)
-    //     setDataDefault(NewData);
-    //     setSupplierData(NewData);
-    //     setMaster(res.data.master);
-    //     setLoadingData(false);
-    // }).catch((err) => {
-    //     console.log(err)
-    //     setMaster(null);
-    //     setLoadingData(false);
-    // })
-    // }
     const handleSearch = () => {
         setLoadingData(true);
         setTextSearch('');
@@ -103,17 +58,68 @@ function SupplierPage() {
     async function initDO() {
         const res = await API_GET_DO('41256', typeof supplierSelected.value ? supplierSelected.value : supplierSelected, sDateFilter, fDateFilter);
         setMaster(res.partMaster);
-        res.data.sort(function(a, b) {
+        setDataDefault(res.data);
+        res.data.sort(function (a, b) {
             return moment(a.date) - moment(b.date);
         });
         let filterByDate = res.data.filter((v, i) => {
             return moment(v.date).isBetween(sDateFilter, fDateFilter, 'days', '[]');
         });
+        setListPO(res.listPO);
         return filterByDate
     }
+    useEffect(() => {
+        // console.log('init completed')
+        // console.log(listPO)
+        rData = supplierData;
+        if (typeof rData == 'object' && Object.keys(rData).length) {
+            rData.map((oData, iData) => {
+                let partno = oData.partNo;
+                let doAct = oData.do;
+                let reqPO = doAct;
+                if (typeof rData[iData].listpo == 'undefined') {
+                    rData[iData].listpo = [];
+                }
+                if (parseFloat(doAct) > 0) {
+                    let oPOs = listPO.filter((oPO) => oPO.partno == partno);
+                    oPOs.map((oPO, iPO) => {
+                        if (typeof oPOs[iPO].status == 'undefined') {
+                            oPOs[iPO].status = 'U';
+                        }
+                    });
+                    oPOs.map((oPO, iPO) => {
+                        let calPO = oPO.whblbqty - reqPO;
+                        if (oPO.whblbqty > 0) {
+                            if (calPO < 0 || calPO == 0) {
+                                if (oPO.whblbqty <= reqPO) {
+                                    reqPO -= oPOs[iPO].whblbqty;
+                                    oPOs[iPO].whblbqty = 0;
+                                    oPO.status = 'F';
+                                    rData[iData].listpo.push(`${oPO.pono}${oPO.itemno}`);
+                                }
+                            } else {
+                                if (reqPO > 0) {
+                                    oPOs[iPO].whblbqty -= reqPO;
+                                    if (oPO.whblbqty > 0) {
+                                        oPO.status = 'P';
+                                        rData[iData].listpo.push(`${oPO.pono}${oPO.itemno}`);
+                                    }
+                                    reqPO = 0;
+                                }
+                            }
+                        }
+                    });
+                    // console.log(oPOs)
+                }
+            })
+        }
+        console.log(rData)
+    }, [supplierData])
 
     async function initSupplier() {
-        const supplier = await API_GET_SUPPLIER_BY_BUYER({ code: '41256' });
+        let typeAccu = typeof reducer.typeAccount != 'undefined' ? reducer.typeAccount : '';
+        let id = typeof reducer.id != 'undefined' ? reducer.id : '';
+        const supplier = await API_GET_SUPPLIER_BY_BUYER({ code: '41256', refCode: typeAccu == 'supplier' ? id : '' });
         if (supplier?.length && supplierSelected == '') {
             let firstSupplier = supplier[0];
             setSupplierSelected({ value: firstSupplier.vdcode, label: firstSupplier.vdname });
@@ -167,7 +173,7 @@ function SupplierPage() {
                             <div className='flex w-full justify-between items-center tag-search'>
                                 <Typography className='text-white '>รายการจัดส่ง</Typography>
                                 <Stack direction={'row'} gap={1} alignItems={'center'}>
-                                    {/* <ExportToExcel data={dataDefault} buyer={buyer} vd={reducer.filter.supplier.vender.value} rn={running} /> */}
+                                    <ExportToExcel data={dataDefault} buyer={buyer} vd={supplierSelected?.value} rn={running} />
                                     <Paper
                                         component="form"
                                         sx={{ p: '2px 8px', display: 'flex', alignItems: 'center', width: 250 }}
@@ -208,24 +214,30 @@ function SupplierPage() {
                                             </TableRow> : (supplierData.length ? supplierData.map((item, index) => {
                                                 let partmaster = master.filter((vMaster, iMaster) => {
                                                     return vMaster.partno == item.partNo;
-                                                })
+                                                });
                                                 partmaster = partmaster[0];
+                                                let partno = item?.partNo;
+                                                // let oPOs = listPO.filter((x) => x.partno == partno);
                                                 return Object.keys(partmaster).length > 0 ? ((parseFloat(item?.do) && parseFloat(item?.do)) > 0 && <TableRow key={index}>
-                                                    <TableCell className='text-center font-semibold'>{moment(item?.date).format('DD/MM/YYYY')}</TableCell>
-                                                    <TableCell className='text-center font-semibold'>{item?.partNo}</TableCell>
+                                                    {/* <TableCell className='text-center font-semibold'>{moment(item?.date).format('DD/MM/YYYY')}</TableCell> */}
+                                                    <TableCell className='text-center font-semibold'>{partno}</TableCell>
                                                     <TableCell className='text-center'>{partmaster?.cm}</TableCell>
                                                     <TableCell className='text-left pl-3'>{partmaster?.description}</TableCell>
-                                                    <TableCell className='text-center'>-</TableCell>
                                                     <TableCell className='text-center font-semibold'>{moment(item?.date).format('DD/MM/YYYY')}</TableCell>
                                                     <TableCell className='text-center'>09:00</TableCell>
                                                     <TableCell className='text-center'>W1</TableCell>
                                                     <TableCell className='text-center'>PART SUPPLY</TableCell>
-                                                    <TableCell className='text-right font-semibold'><NumericFormat displayType='text' thousandSeparator="," value={partmaster.boxQty} decimalScale={2} /></TableCell>
+                                                    <TableCell className='text-right font-semibold bg-gray-50'><NumericFormat displayType='text' thousandSeparator="," value={partmaster.boxQty} decimalScale={2} /></TableCell>
                                                     <TableCell className='text-center'>{partmaster.unit}</TableCell>
-                                                    <TableCell className='text-right font-semibold text-green-600'><NumericFormat displayType='text' thousandSeparator="," value={item.plan} decimalScale={2} /></TableCell>
+                                                    <TableCell className='text-right pr-2 font-semibold text-green-600 bg-green-50'><NumericFormat displayType='text' thousandSeparator="," value={item.do} decimalScale={2} /></TableCell>
+                                                    <TableCell className='text-center text-[12px]'>
+                                                        {
+                                                            (typeof item.listpo != 'undefined' && item.listpo.length) ? item.listpo.join(', ') : <span className='text-red-500'>**********</span>
+                                                        }
+                                                    </TableCell>
                                                     <TableCell className='text-center'>-</TableCell>
-                                                    <TableCell className='text-right font-semibold text-red-500'><NumericFormat displayType='text' thousandSeparator="," value={item.do} decimalScale={2} /></TableCell>
-                                                    <TableCell className='text-center'><div className='bg-[#ff9800] text-white rounded-lg px-3 py-1'>Pending</div></TableCell>
+                                                    <TableCell className='text-right pr-2 font-semibold text-red-500 bg-red-50'><NumericFormat displayType='text' thousandSeparator="," value={item.do} decimalScale={2} /></TableCell>
+                                                    <TableCell className='text-center bg-orange-400 text-white px-3 py-3'>Pending</TableCell>
                                                 </TableRow>) :
                                                     <TableRow key={index}>
                                                         <TableCell className='text-center font-semibold'>{item.part}</TableCell>

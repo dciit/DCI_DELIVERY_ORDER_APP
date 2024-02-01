@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Divider,Stack } from '@mui/material'
+import { Divider, Stack } from '@mui/material'
 import GridViewIcon from '@mui/icons-material/GridView';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,19 +8,7 @@ function NavBarComponent() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     let PATH = import.meta.env.VITE_PATH;
-    var menu = [{
-        path: '/do', text: 'D/O PLAN', value: 'd/o'
-    }, {
-        path: '/supplier', text: 'SUPPLIER', value: 'supplier'
-    }, {
-        path: '/stock', text: 'STOCK', value: 'stock'
-    }, {
-        path: '/po', text: 'PO', value: 'po'
-    }, {
-        path: '/master', text: 'MASTER', value: 'master'
-    }, {
-        path: '/partsupply', text: 'P/S', value: 'partsupply', link: ''
-    }];
+    let menu = reducer.menuLeft;
     const openMenu = (key, path) => {
         dispatch({ type: 'NAV_MENU_SELECT', payload: key });
         navigate(path);
@@ -28,11 +16,25 @@ function NavBarComponent() {
     var once = false;
     useEffect(() => {
         if (!once) {
-            if (reducer.menuIndex == '') {
-                dispatch({ type: 'NAV_MENU_SELECT', payload: 0 });
+            let menuIndex = 0;
+            if (reducer.menuIndex === '') {
+                console.log(999)
+                if (reducer.typeAccount == 'supplier') {
+                    menuIndex = menu.findIndex(x=>x.value == 'supplier');
+                    dispatch({ type: 'NAV_MENU_SELECT', payload: menuIndex });
+                    navigate(import.meta.env.VITE_PATH + menu[menuIndex].path)
+                } else {
+                    dispatch({ type: 'NAV_MENU_SELECT', payload: 0 });
+                    navigate(import.meta.env.VITE_PATH + menu[0].path)
+                }
+            }else{
+                console.log(reducer.menuIndex)
+                dispatch({ type: 'NAV_MENU_SELECT', payload: reducer.menuIndex });
                 navigate(import.meta.env.VITE_PATH + menu[reducer.menuIndex].path)
             }
             once = true;
+        }else{
+            navigate(import.meta.env.VITE_PATH + menu[reducer.menuIndex].path) 
         }
     }, [])
 

@@ -533,6 +533,12 @@ h2.doLineHorizontal .doPlan {
     overflow-y: auto;
     position: relative;
 }
+#tbContent tbody td {
+    padding: 0;
+    padding-left: 4px;
+    padding-right: 4px;
+    font-size: 14px;
+}
 
 .po-page .night .filter,
 .stock-page .night .filter {

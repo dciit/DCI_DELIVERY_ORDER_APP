@@ -22,6 +22,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import dayjs from 'dayjs'
+import { useNavigate } from 'react-router-dom'
 function App() {
   const [openDialogLogout, setOpenDialogLogout] = useState(false);
   const [plan, setPlan] = useState([]);
@@ -47,7 +48,6 @@ function App() {
   let imageUrl = 'http://dcidmc.dci.daikin.co.jp/PICTURE/' + reducer.id + '.JPG';
   var startDate = moment().add(-7, 'days').format('YYYY-MM-DD');
   var endDate = moment().add(1, 'months').format('YYYY-MM-DD');
-  var mainColor = '#18181c';
   var ranonce = false;
   useEffect(() => {
     if (!ranonce) {
@@ -71,7 +71,6 @@ function App() {
     setLoading(true);
     setMsgNoData(false);
     ServiceGetPlan(SupplierCode).then((res) => {
-      console.log(res)
       setLoading(false);
       setRunningCode(res.data.runningCode != '' ? res.data.runningCode : '-');
       if (Object.keys(res.data.data).length) {
@@ -240,6 +239,7 @@ function App() {
     setOpenDialogLogout(false);
   }
   const handleLogout = () => {
+    console.log('123')
     dispatch({ type: 'CLEAR_LOGIN' });
     setOpenDialogLogout(false);
   }

@@ -42,8 +42,10 @@ function MasterPage() {
                 setLoading(true);
                 if (typeSelected.value == 'part') {
                     const venders = await ServiceGetSupplier("all");
+
                     var vdSelect = venders.data.map((item, index) => (
-                        { value: item.VD_CODE, label: (item.VD_DESC + ' (' + item.VD_CODE + ')') }
+                        // { value: item.VD_CODE, label: (item.VD_DESC + ' (' + item.VD_CODE + ')') }
+                        { value: item.vdCode, label: (item.vdDesc + ' (' + item.vdCode + ')') }
                     ));
                     vdSelect = vdSelect.filter(function (el) {
                         return el.value != '' && el.value != null
@@ -58,9 +60,10 @@ function MasterPage() {
                     setDataDefault(content);
                     setLoading(false);
                 } else {
-                    const content = await ServiceVender();
-                    setData(content);
-                    setDataDefault(content);
+                    // const content = await ServiceVender();
+                    const content = await ServiceGetSupplier("all");
+                    setData(content.data);
+                    setDataDefault(content.data);
                     setLoading(false);
                 }
             }
@@ -68,6 +71,11 @@ function MasterPage() {
             once = true;
         }
     }, [effect]);
+
+    useEffect(()=>{
+        console.log('effect data');
+        console.log(data)
+    },[data])
 
     const filterData = (search) => {
         const filteredRows = dataDefault.filter((row) => {
@@ -86,13 +94,6 @@ function MasterPage() {
     const dialogVenderDetail = (vdcode, loading = true) => {
         setVenderSelected(vdcode);
         setOpenVenderDetail(true);
-        // setLoadingVenderDetail(loading);
-        // async function fetchVenderDetail() {
-        //     const res = await GetVenderDetail(vdcode);
-        //     setVender(res[0]);
-        //     setLoadingVenderDetail(false);
-        // }
-        // fetchVenderDetail();
     }
 
     const handleOpenDialogPartDetail = (part) => {
@@ -165,6 +166,7 @@ function MasterPage() {
                                                     <TableCell className='text-center'>#</TableCell>
                                                     <TableCell className='text-center'>รหัส</TableCell>
                                                     <TableCell className='text-center'>ชื่อ</TableCell>
+                                                    <TableCell className='text-right'>Prod Lead (D)</TableCell>
                                                     <TableCell className='text-center'>รอบต่อวัน</TableCell>
                                                     <TableCell className='text-center'>จัดส่งขั้นต่ำ (กล่อง)</TableCell>
                                                     <TableCell className='text-center'>จัดส่งสูงสุด (กล่อง)</TableCell>
@@ -186,25 +188,26 @@ function MasterPage() {
                                     </TableHead>
                                     <TableBody>
                                         {
-                                            loading ? <TableRow><TableCell colSpan={typeSelected.value == 'vender' ? 6 : 8} className='text-center'><CircularProgress /></TableCell></TableRow> : (
+                                            loading ? <TableRow><TableCell colSpan={typeSelected.value == 'vender' ? 6 : 9} className='text-center'><CircularProgress /></TableCell></TableRow> : (
                                                 data.length ? data.map((item, index) => {
                                                     return typeSelected.value == 'vender' ? <TableRow key={index}>
                                                         <TableCell className='text-center'>{index + 1}</TableCell>
                                                         <TableCell className='text-center'>{item?.vdCode}</TableCell>
                                                         <TableCell>{item?.vdDesc}</TableCell>
-                                                        <TableCell className='text-right'>{item?.vdRound}</TableCell>
-                                                        <TableCell className='text-right text-red-500 font-bold'>{item?.vdMinDelivery}</TableCell>
-                                                        <TableCell className='text-right text-green-600 font-bold'>{item?.vdMaxDelivery}</TableCell>
+                                                        <TableCell className='text-right font-bold text-orange-600 bg-orange-100'>{`${item?.vdProdLead}`}</TableCell>
+                                                        <TableCell className='text-right font-bold text-blue-600 bg-blue-100'>{item?.vdRound}</TableCell>
+                                                        <TableCell className='text-right text-red-500 font-bold bg-red-100'>{item?.vdMinDelivery}</TableCell>
+                                                        <TableCell className='text-right text-green-600 font-bold bg-green-100'>{item?.vdMaxDelivery}</TableCell>
                                                         <TableCell className='text-center'><div className='flex gap-1 justify-center'><Button variant='contained' size='small' onClick={() => dialogVenderDetail(item?.vdCode)}><SearchIcon /> แก้ไข</Button></div></TableCell>
                                                     </TableRow> :
                                                         <TableRow key={index} className='tdMaster'>
                                                             <TableCell className='text-left pl-4 font-bold'>{item?.partno}  {item?.cm}</TableCell>
                                                             <TableCell>{item?.description}</TableCell>
                                                             <TableCell className='text-center font-bold'>{item?.unit}</TableCell>
-                                                            <TableCell className='text-right font-bold'>{item?.pdlt}</TableCell>
-                                                            <TableCell className='text-right font-bold text-blue-700'>{item?.boxQty}</TableCell>
-                                                            <TableCell className='text-right font-bold text-red-500'>{item?.boxMin}</TableCell>
-                                                            <TableCell className='text-right font-bold text-green-600'>{item?.boxMax}</TableCell>
+                                                            <TableCell className='text-right font-bold text-orange-600 bg-orange-100'>{item?.pdlt}</TableCell>
+                                                            <TableCell className='text-right font-bold text-blue-700 bg-blue-100'>{item?.boxQty}</TableCell>
+                                                            <TableCell className='text-right font-bold text-red-500 bg-red-100'>{item?.boxMin}</TableCell>
+                                                            <TableCell className='text-right font-bold text-green-600 bg-green-100'>{item?.boxMax}</TableCell>
                                                             <TableCell className='text-right font-bold'>{item?.vdCode}</TableCell>
                                                             <TableCell className='text-center'><div className='flex gap-1 justify-center'><Button variant='contained' size='small' onClick={() => handleOpenDialogPartDetail(item?.partno)}><SearchIcon /> แก้ไข</Button></div></TableCell>
                                                         </TableRow>

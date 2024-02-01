@@ -1,6 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import PlanPage from "./pages/PlanPage";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import MainLayout from "./pages/MainLayout";
 import SupplierPage from "./pages/SupplierPage";
@@ -13,22 +12,21 @@ import Test from "./pages/Test";
 import { useDispatch, useSelector } from "react-redux";
 import PartSupply from "./pages/PartSupply";
 import DOPage from "./pages/DOPage";
+import { persistor } from './reducers/store'
 const Routers = () => {
     const dispatch = useDispatch();
-    // const VITE_BASE_PATH = 'DeliveryOrderApp'
     const VITE_BASE_PATH = ''
     const version = import.meta.env.VITE_VERSION;
-    // console.log(version)
     const reducer = useSelector(state => state.mainReducer);
     if (reducer.version == 'undefined' || reducer.version != version) {
+        persistor.purge();
         dispatch({ type: 'RESET', payload: { version: version, login: false } });
-        // location.reload();
     }
     return (
         <BrowserRouter>
             <Routes>
                 <Route element={<MainLayout />}>
-                    <Route path={VITE_BASE_PATH + '/'} element={<PlanPage />} />
+                    <Route path={VITE_BASE_PATH + '/'} element={<DOPage />} />
                     <Route path={VITE_BASE_PATH + '/do'} element={<DOPage />} />
                     <Route path={VITE_BASE_PATH + '/supplier'} element={<SupplierPage />} />
                     <Route path={VITE_BASE_PATH + '/dopo'} element={<DoPoPage />} />

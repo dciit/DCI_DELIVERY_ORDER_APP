@@ -69,16 +69,16 @@ export function ServiceGetHisrtoryById(id) {
     return http.get('/do/' + id);
 }
 
-export function GetVenders() {
-    return new Promise(resolve => {
-        http.get('/getSupplier').then((res) => {
-            resolve(res.data);
-        }).catch(() => {
-            console.log('catch')
-            resolve([]);
-        })
-    })
-}
+// export function GetVenders() {
+//     return new Promise(resolve => {
+//         http.get('/getSupplier').then((res) => {
+//             resolve(res.data);
+//         }).catch(() => {
+//             console.log('catch')
+//             resolve([]);
+//         })
+//     })
+// }
 
 export function GET_STOCK(data) {
     return new Promise(resolve => {
@@ -197,5 +197,20 @@ export function API_RUN_DO(buyerCode = "41256") {
         http.get('/insertDO/' + buyerCode).then((res) => {
             resolve(res.data);
         });
+    })
+}
+
+export function API_GET_MASTER_OF_VENDER(vdcode = '') {
+    return new Promise((resolve) => {
+        http.get(`/getVenderMasterOfVender/${vdcode}`).then((res) => {
+            resolve(res.data);
+        })
+    })
+}
+export function API_GET_VENDER_MASTERS() {
+    return new Promise((resolve) => {
+        http.get(`/getVenderMasterOfVenders`).then((res) => {
+            resolve(res.data);
+        })
     })
 }

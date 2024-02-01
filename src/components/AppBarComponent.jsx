@@ -4,22 +4,15 @@ import { Avatar, Box, Button, Dialog, DialogActions, DialogContent, DialogConten
 import { deepOrange, red } from '@mui/material/colors';
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Navigate, useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 import '../css/Appbar.css'
+import { persistor } from '../reducers/store'
 function MainAppbar() {
-    const [openDialogLogout, setOpenDialogLogout] = useState(false);
-    var VITE_PATH = import.meta.env.VITE_PATH;
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const reducer = useSelector(state => state.mainReducer);
     let imageUrl = 'http://dcidmc.dci.daikin.co.jp/PICTURE/' + reducer.id + '.JPG';
-    const handleCloseLogout = () => {
-        setOpenDialogLogout(false);
-    }
-    const handleLogout = () => {
-        dispatch({ type: 'CLEAR_LOGIN' });
-        setOpenDialogLogout(false);
-    }
+
     const label = { inputProps: { 'aria-label': 'Switch demo' } };
     return (
         <div className='w-full h-[7%] bg-[#37393c]  text-[#ececec] shadow-lg flex justify-between'>
@@ -43,6 +36,8 @@ function MainAppbar() {
                     <div className='flex items-center gap-2' onClick={() => {
                         if (confirm('คุณต้องการออกจากระบบ ใช่หรือไม่ ?')) {
                             window.localStorage.clear();
+                            navigate('/')
+                            persistor.purge();
                             dispatch({ type: 'INIT_LOGOUT', payload: { login: false, id: '', name: '',jwt:'' } })
                         }
                     }}>

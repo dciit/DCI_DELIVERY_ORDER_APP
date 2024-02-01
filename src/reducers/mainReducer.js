@@ -16,6 +16,20 @@ const initialState = {
     { name: 'po', label: 'PO', index: 8, disabled: false, checked: false, bgColor: 'bg-teal-500' },
         // { name: 'stock', label: 'P/S Stock', index: 9, disabled: false, checked: false, bgColor: 'bg-orange-500' },
     ],
+    menuLeft: [{
+        path: '/do', text: 'D/O PLAN', value: 'd/o'
+    }, {
+        path: '/supplier', text: 'SUPPLIER', value: 'supplier'
+    }, {
+        path: '/stock', text: 'STOCK', value: 'stock'
+    }, {
+        path: '/po', text: 'PO', value: 'po'
+    }, {
+        path: '/master', text: 'MASTER', value: 'master'
+    }],
+    // , {
+    //     path: '/partsupply', text: 'P/S', value: 'partsupply', link: ''
+    // }
     privilegeFilter: {
         employee: ['plan', 'do', 'stock'],
         supplier: ['do', 'doact']
@@ -163,6 +177,7 @@ const IndexReducer = (state = initialState, action) => {
             action.payload.filters = filters;
             return {
                 ...state,
+                menuIndex: '',
                 ...action.payload
             }
         case 'INIT_DIV':

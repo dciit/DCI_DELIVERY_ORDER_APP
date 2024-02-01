@@ -11,10 +11,8 @@ import moment from 'moment'
 function DialogVenderDetail(props) {
     const reducer = useSelector(state => state.mainReducer);
     const { open, setOpen, loading, setLoading, refresh, setOpenSnackBar, venderSelected, data, setData } = props;
-    const [min, setMin] = useState();
     const [listTimeSchedule, setListTimeSchedule] = useState();
     const [vender, setVender] = useState();
-    const [timeScheduleSelected, setTimeScheduleSelected] = useState();
     const UpdateDate = (day, checked) => {
         ServiceUpdateDate({ vender: vender.vdCode, date: day, check: checked }).then((res) => {
             // refresh(vender.VD_CODE, false);
@@ -141,6 +139,21 @@ function DialogVenderDetail(props) {
                                     fullWidth
                                     focused
                                     value={vender?.vdRound}
+                                    onChange={(e) => {
+                                        setVender({ ...vender, vdRound: e.target.value })
+                                    }}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField
+                                    type='number'
+                                    id="standard-read-only-input"
+                                    label="Prod.Lead"
+                                    fullWidth
+                                    focused
+                                    color='error'
+                                    className='bg-orange-50 border-orange-300'
+                                    value={vender?.vdProdLead}
                                     onChange={(e) => {
                                         setVender({ ...vender, vdRound: e.target.value })
                                     }}
