@@ -1,5 +1,5 @@
 import { Button, CircularProgress, FormControl, Grid, IconButton, InputBase, MenuItem, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, tableCellClasses } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { API_GET_DO, API_GET_SUPPLIER_BY_BUYER, ServiceGetPlan, ServiceGetSupplier } from '../Services';
 import { NumericFormat } from 'react-number-format';
 import SearchIcon from '@mui/icons-material/Search';
@@ -8,8 +8,10 @@ import AirportShuttleIcon from '@mui/icons-material/AirportShuttle';
 import { useSelector } from 'react-redux';
 import Select from 'react-select'
 import moment from 'moment';
-import ExportToExcel from '../components/ExportToExcel';
+import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
+import { DownloadTableExcel } from 'react-export-table-to-excel';
 function SupplierPage() {
+    const tableRef = useRef(null);
     const headers = ['Drawing No', 'Cm', 'Decription', 'DEL.DATE', 'TIME', 'W/H NO', 'DEL.PLACE', 'QTY/BOX', 'UNIT', 'D/O QTY', 'PO (Recomment)', 'R/C QTY', 'REMAIN', 'STATUS'
     ]
     const [sDateFilter, setSDateFilter] = useState(moment().format('YYYY-MM-DD'));
@@ -71,6 +73,7 @@ function SupplierPage() {
     useEffect(() => {
         // console.log('init completed')
         // console.log(listPO)
+        console.log('123')
         rData = supplierData;
         if (typeof rData == 'object' && Object.keys(rData).length) {
             rData.map((oData, iData) => {
@@ -113,7 +116,6 @@ function SupplierPage() {
                 }
             })
         }
-        console.log(rData)
     }, [supplierData])
 
     async function initSupplier() {
@@ -173,7 +175,22 @@ function SupplierPage() {
                             <div className='flex w-full justify-between items-center tag-search'>
                                 <Typography className='text-white '>รายการจัดส่ง</Typography>
                                 <Stack direction={'row'} gap={1} alignItems={'center'}>
-                                    <ExportToExcel data={dataDefault} buyer={buyer} vd={supplierSelected?.value} rn={running} />
+                                    {/* <ExportToExcel data={dataDefault} buyer={buyer} vd={supplierSelected?.value} rn={running} /> */}
+                                    <DownloadTableExcel
+                                        filename={`DO-${supplierSelected?.value}`}
+                                        sheet="D/O"
+                                        currentTableRef={tableRef.current}
+                                    >
+                                        {
+                                            supplierData.length && <div className={`bg-[#4effca] text-[#080b0f] w-fit rounded-[8px] px-[8px] pt-[0px] pb-[4px] cursor-pointer transition ease-in-out delay-50  hover:-translate-y-1 hover:scale-105 hover:bg-[#4effca] hover:text-[#080b0f] duration-300 shadow-mtr `} >
+                                                <Stack alignItems={'center'} direction={'row'}>
+                                                    <SimCardDownloadIcon className='text-[1vw] mr-1' />
+                                                    <span className='text-center'>Export to excel</span>
+                                                </Stack>
+                                            </div>
+                                        }
+
+                                    </DownloadTableExcel>
                                     <Paper
                                         component="form"
                                         sx={{ p: '2px 8px', display: 'flex', alignItems: 'center', width: 250 }}
@@ -192,7 +209,7 @@ function SupplierPage() {
                                 </Stack>
                             </div>
                             <TableContainer component={Paper} className='h-fit'>
-                                <Table size='small' id="tbContent">
+                                <Table size='small' id="tbContent" ref={tableRef}>
                                     <TableHead>
                                         <TableRow>
                                             {

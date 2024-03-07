@@ -303,6 +303,37 @@ function DOPage() {
         </td>;
         return res;
     }
+
+    function VIEW_PLAN(row, item) {
+        let val = item.value;
+        let prev = typeof item.prev != 'undefined' ? item.prev : val;
+        let PlanIsDiff = false;
+        if (val != prev) {
+            PlanIsDiff = true;
+        }
+        let date = moment(item.date);
+        let ThisDay = moment();
+        let IsHoliday = ['SAT', 'SUN'].includes(date.format('ddd').toUpperCase());
+        let IsFixDay = (date.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
+        let IsRun = (date.format('YYYY-MM-DD') >= fixDate.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < runDate.format('YYYY-MM-DD')) ? true : false;
+        var dtLoop = moment(item.date);
+        var dtNow = moment()
+        let isGradient = false;
+        if (dtLoop.format('YYYYMMDD') == dtNow.add('days', prodLead).format('YYYYMMDD')) {
+            if (moment().format('YYYYMMDD HH:mm:ss') < moment().format('YYYYMMDD 15:01:00')) {
+                isGradient = true;
+            }
+        }
+        var res = <td className={`w-[150px] text-white ${IsHoliday && 'isHoliday'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? 'gradientTbody' : ''}`}>
+            {
+                val > 0 ? (val != prev ? <Badge color={`${val > prev ? 'success' : 'error'}`} className={`buget-do cursor-pointer ${row.classs}`} badgeContent={`${val > prev ? '+' : '-'}${val > prev ? (val - prev) : (prev - val)}`} max={9999}>
+                    {val}
+                </Badge> : <NumericFormat className={`cursor-pointer ${row.classs}`} displayType='text' allowLeadingZeros thousandSeparator="," value={!PlanIsDiff ? val : 999} decimalScale={2}  />) : (val == 0 ? '' : <span className='text-red-500 font-semibold'>{val}</span>)
+            }
+        </td>;
+        return res;
+    }
+
     function VIEW_COMMON(row, item) {
         let val = item.value;
         let prev = typeof item.prev != 'undefined' ? item.prev : val;
@@ -602,7 +633,7 @@ function DOPage() {
                                                         item.name != 'line' ? item.data.map((i, index) => {
                                                             let view = '';
                                                             if (item.name == 'plan') {
-                                                                view = VIEW_COMMON(item, i, index)
+                                                                view = VIEW_PLAN(item, i, index)
                                                             } else if (item.name == 'do') {
                                                                 view = VIEW_DO(item, i, index);
                                                             } else if (item.name == 'stock') {
