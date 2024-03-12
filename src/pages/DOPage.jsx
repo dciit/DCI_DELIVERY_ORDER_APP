@@ -19,6 +19,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { NumericFormat } from 'react-number-format'
 import DialogFilter from '../components/DialogFilter'
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import DialogEditDO from '../components/dialog.edit.do'
 function DOPage() {
     let prodLead = 0;
     const [loading, setLoading] = useState(true);
@@ -29,6 +30,7 @@ function DOPage() {
     const [showBtnRunDo, setShowBtnRunDo] = useState(true);
     const [openFilter, setOpenFilter] = useState(false);
     const [openEditDOVal, setOpenEditDOVal] = useState(false);
+    const [dataEditDO, setDataEditDO] = useState({});
     const reducer = useSelector(state => state.mainReducer);
     let VdMasters = reducer.venderMaster;
     const dispatch = useDispatch();
@@ -65,10 +67,23 @@ function DOPage() {
             setOnce(true);
         }
     }, [once]);
-
+    useEffect(() => {
+        if (Object.keys(dataEditDO).length) {
+            setOpenEditDOVal(true);
+        }
+    }, [dataEditDO])
     async function init() {
         await initBuyer();
         await initContent();
+    }
+
+    async function handleOpenEditDO(row, ymd, doVal) {
+        setDataEditDO({
+            ymd: ymd,
+            partno: row.part,
+            doVal: doVal,
+            runningCode: RunningCode
+        })
     }
 
     async function initContent() {
@@ -86,10 +101,10 @@ function DOPage() {
     }
 
     useEffect(() => {
-        if (typeof DOResult != 'undefined' && Object.keys(DOResult).length) {
-            console.log('effect ')
-            console.log(DOResult)
-        }
+        // if (typeof DOResult != 'undefined' && Object.keys(DOResult).length) {
+        //     console.log('effect ')
+        //     console.log(DOResult)
+        // }
     }, [DOResult])
 
     async function initBuyer() {
@@ -298,7 +313,7 @@ function DOPage() {
         }
         var res = <td className={`w-[150px] text-white ${IsHoliday && 'isHoliday'} ${IsHolidayOfVender && 'IsHolidayOfVender'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? 'gradientTbody' : ''}`}>
             {
-                val > 0 ? <h2 class="doLineHorizontal"><NumericFormat className={`cursor-pointer ${row.classs}`} displayType='text' allowLeadingZeros thousandSeparator="," value={val} decimalScale={2} /></h2> : (IsHolidayOfVender ? <h2 class="doLineHorizontal"></h2> : <CloseIcon className={`text-red-500`} />)
+                val > 0 ? <h2 class="doLineHorizontal"><NumericFormat className={`cursor-pointer ${row.classs}`} displayType='text' allowLeadingZeros thousandSeparator="," value={val} decimalScale={2} onClick={() => IsFixDay ? handleOpenEditDO(row, date.format('YYYYMMDD'), val) : false} /></h2> : (IsHolidayOfVender ? <h2 class="doLineHorizontal" onClick={() => IsFixDay ? handleOpenEditDO(row, date.format('YYYYMMDD'), val) : false}>&nbsp;</h2> : <CloseIcon className={`text-red-500`} />)
             }
         </td>;
         return res;
@@ -328,7 +343,7 @@ function DOPage() {
             {
                 val > 0 ? (val != prev ? <Badge color={`${val > prev ? 'success' : 'error'}`} className={`buget-do cursor-pointer ${row.classs}`} badgeContent={`${val > prev ? '+' : '-'}${val > prev ? (val - prev) : (prev - val)}`} max={9999}>
                     {val}
-                </Badge> : <NumericFormat className={`cursor-pointer ${row.classs}`} displayType='text' allowLeadingZeros thousandSeparator="," value={!PlanIsDiff ? val : 999} decimalScale={2}  />) : (val == 0 ? '' : <span className='text-red-500 font-semibold'>{val}</span>)
+                </Badge> : <NumericFormat className={`cursor-pointer ${row.classs}`} displayType='text' allowLeadingZeros thousandSeparator="," value={!PlanIsDiff ? val : 999} decimalScale={2} />) : (val == 0 ? '' : <span className='text-red-500 font-semibold'>{val}</span>)
             }
         </td>;
         return res;
@@ -658,7 +673,8 @@ function DOPage() {
                     </div>
                     <DialogRunDO handle={() => confirmApprDo(true)} open={openApprDo} close={setOpenApprDo} loading={loadingRunDO} setLoading={setLoadingRunDO} />
                     <DialogFilter open={openFilter} close={setOpenFilter} refresh={FN_INIT_DATA} />
-                    <Dialog open={openEditDOVal} onClose={() => setOpenEditDOVal(loadingConfEditDo)} fullWidth maxWidth={'sm'}>
+                    <DialogEditDO open={openEditDOVal} close={setOpenEditDOVal} data={dataEditDO} dataDO={DOResult} setDataDO={setDOResult} />
+                    {/* <Dialog open={openEditDOVal} onClose={() => setOpenEditDOVal(loadingConfEditDo)} fullWidth maxWidth={'sm'}>
                         <DialogTitle>แก้ไขตัวเลข D/O</DialogTitle>
                         <DialogContent dividers>
                             <div className='py-2'>
@@ -689,7 +705,7 @@ function DOPage() {
                             }}>ปิดหน้าต่าง</Button>
                             <LoadingButton loading={loadingConfEditDo} loadingPosition='start' startIcon={<CheckIcon />} variant='contained' onClick={(e) => handleConfirmEdit(doEdit.partno)}>บันทึก</LoadingButton>
                         </DialogActions>
-                    </Dialog>
+                    </Dialog> */}
                     <Snackbar autoHideDuration={6000} anchorOrigin={{ vertical: "top", horizontal: "right" }} open={openSnackBar} onClose={() => setOpenSnackBar(false)}>
                         <Alert onClose={() => setOpenSnackBar(false)} severity="success">
                             ออกแผน Delivery Order สำเร็จแล้ว

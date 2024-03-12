@@ -214,3 +214,19 @@ export function API_GET_VENDER_MASTERS() {
         })
     })
 }
+
+export function API_EDIT_DO(param) {
+    return new Promise((resolve) => {
+        http.post(`/editDO`, param).then((res) => {
+            resolve(res.data);
+        })
+    })
+}
+
+export function API_GET_LOG(param) {
+    return new Promise((resolve) => {
+        http.post(`/DOLog`, param).then((res) => {
+            resolve(res.data);
+        })
+    })
+}
