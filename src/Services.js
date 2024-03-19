@@ -68,18 +68,6 @@ export function ServiceGetBuyer() {
 export function ServiceGetHisrtoryById(id) {
     return http.get('/do/' + id);
 }
-
-// export function GetVenders() {
-//     return new Promise(resolve => {
-//         http.get('/getSupplier').then((res) => {
-//             resolve(res.data);
-//         }).catch(() => {
-//             console.log('catch')
-//             resolve([]);
-//         })
-//     })
-// }
-
 export function GET_STOCK(data) {
     return new Promise(resolve => {
         http.post('/data/stock', data).then((res) => {

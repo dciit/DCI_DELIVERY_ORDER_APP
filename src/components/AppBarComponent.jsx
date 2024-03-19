@@ -11,11 +11,11 @@ function MainAppbar() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const reducer = useSelector(state => state.mainReducer);
-    let imageUrl = 'http://dcidmc.dci.daikin.co.jp/PICTURE/' + reducer.id + '.JPG';
+    // let imageUrl = 'http://dcidmc.dci.daikin.co.jp/PICTURE/' + reducer.id + '.JPG';
 
     const label = { inputProps: { 'aria-label': 'Switch demo' } };
     return (
-        <div className='w-full h-[7%] bg-[#37393c]  text-[#ececec] shadow-lg flex justify-between'>
+        <div className='w-full h-[70px] bg-[#37393c]  text-[#ececec] shadow-lg flex justify-between'>
             <div className='flex items-center gap-0 pl-[16px]'>
                 <PaidIcon className='text-[2vw] text-[#4effca] drop-shadow-lg' />
                 <Stack className='select-none h-[93%] pl-[8px] gap-1' justifyContent={'center'} >
@@ -29,10 +29,10 @@ function MainAppbar() {
             </div>
             <div className='text-right'>
                 <div className='w-fit h-full flex items-center gap-2 pr-3' >
-                    <div className=''>
+                    {/* <div className=''>
                         <span>Theme</span>
                         <Switch {...label} defaultChecked />
-                    </div>
+                    </div> */}
                     <div className='flex items-center gap-2' onClick={() => {
                         if (confirm('คุณต้องการออกจากระบบ ใช่หรือไม่ ?')) {
                             window.localStorage.clear();

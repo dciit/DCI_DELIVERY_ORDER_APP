@@ -8,6 +8,7 @@ import { BoxInput } from '../styles/LoginStyled';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { ServicePrivilege } from '../Services';
+import { API_PRIVILEGE } from '../ServiceHR';
 // import { ServiceJWT } from '../Services';
 function LoginPage() {
     const { register, handleSubmit, watch, formState: { errors }, setValue, setFocus } = useForm();
@@ -42,33 +43,25 @@ function LoginPage() {
             url: 'https://scm.dci.co.th/BudgetCharts/BudgetRestService/api/authen?username=' + uname + '&password=' + encodeURIComponent(pwd),
             withCredentials: false,
         }).then(async (res) => {
-            console.log(res)
             if (res.data[0]['EmpCode'] != null) {
-                // var jwt = await getJwt(uname, pwd);
-                // console.log(jwt.length)
-                // if (jwt.length) {
-                    // dispatch({ type: 'JWT', payload: jwt });
-                    dispatch({ type: 'TYPE_ACCOUNT', payload: 'employee' });
-                    // localStorage.setItem('jwt', jwt);
-                    dispatch({ type: 'INIT_LOGIN', payload: { login: true, id: res.data[0]['EmpCode'], name: res.data[0]['ShortName'], typeAccount: 'employee' } });
-                    setLoginFalse(false);
-                    setLoginState(true)
-                // } else {
-                //     setLoginFalse(true);
-                //     setLoginState(false);
-                //     console.log('12312')
-
-                // }
+                let privilege = await API_PRIVILEGE('DO', 'DO');
+                dispatch({ type: 'SET_PRIVILEGE', payload: privilege });
+                dispatch({ type: 'TYPE_ACCOUNT', payload: 'employee' });
+                dispatch({ type: 'INIT_LOGIN', payload: { login: true, id: res.data[0]['EmpCode'], name: res.data[0]['ShortName'], typeAccount: 'employee', dvcd: res.data[0]['DVCD'] } });
+                setLoginFalse(false);
+                setLoginState(true)
             } else {
-                axios.post(import.meta.env.VITE_BASE_DELIVERY_ORDER + '/login/employee', { username: uname, password: encodeURIComponent(pwd) }, {
+                axios.get(`${import.meta.env.VITE_PATH_HR_API}/login/${uname}`, {
                     headers: {
                         "Content-Type": 'application/json;charset=UTF-8'
                     }
-                }).then((jwt) => {
+                }).then(async (jwt) => {
                     if (jwt.data.status) {
+                        let privilege =  await API_PRIVILEGE('DO','DO');
+                        dispatch({ type: 'SET_PRIVILEGE', payload: privilege });
                         dispatch({ type: 'TYPE_ACCOUNT', payload: 'employee' })
                         dispatch({ type: 'JWT', payload: jwt });
-                        dispatch({ type: 'INIT_LOGIN', payload: { login: true, id: uname, name: jwt.data.vdName } });
+                        dispatch({ type: 'INIT_LOGIN', payload: { login: true, id: uname, name: jwt.data.name, fullName: jwt.data.fullName,dvcd:jwt.data.dvcd } });
                         localStorage.setItem('jwt', jwt);
                         setLoginFalse(false);
                         setLoginState(true)

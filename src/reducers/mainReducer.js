@@ -63,16 +63,21 @@ const initialState = {
         }
     },
     jwt: '',
-    privilege: [],
+    navPrivilege: [],
     typeAccount: 'employee',
     partMaster: [],
-    venderMaster: []
-
+    venderMaster: [],
+    privilege: [],
+    dvcd: ''
 }
 
 const IndexReducer = (state = initialState, action) => {
     switch (action.type) {
-
+        case 'SET_PRIVILEGE':
+            return {
+                ...state,
+                privilege: action.payload
+            }
         case 'SET_PART_MASTER':
             return {
                 ...state,
@@ -102,12 +107,10 @@ const IndexReducer = (state = initialState, action) => {
             }
         case 'TYPE_ACCOUNT':
             if (action.payload == 'employee') {
-                console.log(state.filters)
                 var index = state.filters.findIndex((item) => item.name == 'plan');
                 state.filters[index].checked = true;
                 index = state.filters.findIndex((item) => item.name == 'stock');
                 state.filters[index].checked = true;
-                console.log(state.filters)
             } else {
                 var index = state.filters.findIndex((item) => item.name == 'plan');
                 state.filters[index].checked = false;
@@ -121,12 +124,13 @@ const IndexReducer = (state = initialState, action) => {
         case 'PRIVILEGE_SET':
             return {
                 ...state,
-                privilege: action.payload
+                navPrivilege: action.payload
             }
         case 'RESET':
             var resetState = initialState
             resetState.version = action.payload.version;
             resetState.login = false;
+            resetState.privilege = [];
             return resetState;
         case 'INIT_PLAN':
             var index = 0;
@@ -174,6 +178,7 @@ const IndexReducer = (state = initialState, action) => {
                     filters[index]['checked'] = false;
                 }
             })
+            action.payload.privilege = [];
             action.payload.filters = filters;
             return {
                 ...state,

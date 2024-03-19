@@ -20,6 +20,8 @@ import { NumericFormat } from 'react-number-format'
 import DialogFilter from '../components/DialogFilter'
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import DialogEditDO from '../components/dialog.edit.do'
+import { API_PRIVILEGE } from '../ServiceHR'
+import CHECK_PRIVILEGE from '../Method'
 function DOPage() {
     let prodLead = 0;
     const [loading, setLoading] = useState(true);
@@ -36,13 +38,9 @@ function DOPage() {
     const dispatch = useDispatch();
     // const [runcode, setRunCode] = useState('');
     // const [buyer, setBuyer] = useState([]);
-    const [doEdit, setDoEdit] = useState(null);
-    const [loadingConfEditDo, setLoadingConfEditDo] = useState(false);
     const [loadingRunDO, setLoadingRunDO] = useState(false);
     const [openSnackBar, setOpenSnackBar] = useState(false);
-    const [textAlarm, setTextAlarm] = useState('');
     var startDate = moment().add(-7, 'days').format('YYYY-MM-DD');
-    // var endDate = moment().add(1, 'months').format('YYYY-MM-DD');
     var endDate = moment().add(9, 'days').format('YYYY-MM-DD');
     var fixDate = moment().add(2, 'days');
     var runDate = moment(fixDate.add(1, 'days')).add(7, 'days')
@@ -58,9 +56,10 @@ function DOPage() {
     const [venderDelivery, setVenderDelivery] = useState({});
     const reduxPartMaster = useSelector(state => state.mainReducer.partMaster);
     const typeAccout = useSelector(state => state.mainReducer?.typeAccount);
-    const username = useSelector(state => state.mainReducer?.id);
-    const [vendersMaster, setVendersMaster] = useState([]);
+    const empcode = useSelector(state => state.mainReducer.id);
     const [venderSelected, setVenderSelected] = useState([]);
+    const reduxPrivilege = useSelector(state => state.mainReducer.privilege);
+    const redux = useSelector(state => state.mainReducer);
     useEffect(() => {
         if (!once) {
             init();
@@ -69,7 +68,11 @@ function DOPage() {
     }, [once]);
     useEffect(() => {
         if (Object.keys(dataEditDO).length) {
-            setOpenEditDOVal(true);
+            if (CHECK_PRIVILEGE(reduxPrivilege, empcode, 'DO', 'DO', 'DVCD', 'EDIT', redux.dvcd).length) {
+                setOpenEditDOVal(true);
+            } else {
+                alert('คุณไม่มีสิทธิในการแก้ไขข้อมูล กรุณาติดต่อ IT (เบียร์ 611)');
+            }
         }
     }, [dataEditDO])
     async function init() {
@@ -100,12 +103,12 @@ function DOPage() {
         setColumns(await FN_SET_COLUMN(initPlan.venderSelected));
     }
 
-    useEffect(() => {
-        // if (typeof DOResult != 'undefined' && Object.keys(DOResult).length) {
-        //     console.log('effect ')
-        //     console.log(DOResult)
-        // }
-    }, [DOResult])
+    // useEffect(() => {
+    // if (typeof DOResult != 'undefined' && Object.keys(DOResult).length) {
+    //     console.log('effect ')
+    //     console.log(DOResult)
+    // }
+    // }, [DOResult])
 
     async function initBuyer() {
         var initBuyer = await API_GET_BUYER();
@@ -125,14 +128,12 @@ function DOPage() {
     }, [suppliers]);
 
     async function initSupplier() {
-        console.log('init suppliers ...');
         const listSuppliers = await API_GET_SUPPLIER_BY_BUYER({ code: buyerSelected });
         if (reducer.typeAccount == 'supplier') {
             setSuppliers(listSuppliers.filter((v) => (v.vdcode == reducer.id)));
         } else {
             setSuppliers(listSuppliers);
         }
-        console.log('end init suppliers ...')
     }
 
     async function FN_INIT_PLAN(buyer, vd) {
@@ -140,15 +141,12 @@ function DOPage() {
         return res;
     }
     function FN_INIT_DATA(API_DATA) {
-        // console.log('start init format data')
         if (typeof API_DATA == 'undefined') {
             API_DATA = data;
         }
         let DATA_FORMAT = [];
-        // let PART_REF = API_DATA[0].partNo;
         let PART_REF = API_DATA[0].partNo;
         let PLAN = [];
-        // let PLAN_PREV = [];
         let DO = [];
         let STOCK = [];
         let DOACT = [];
@@ -200,7 +198,6 @@ function DOPage() {
                         data: STOCK
                     });
                 }
-
                 filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'doAct')).length;
                 if (filter) {
                     DATA_FORMAT.push({
@@ -230,14 +227,12 @@ function DOPage() {
                 });
                 PART_REF = PART;
                 PLAN = [];
-                // PLAN_PREV = [];
                 DO = [];
                 STOCK = [];
                 DOACT = [];
                 PICKLIST = [];
                 PO = [];
             }
-            // console.log(item)
             if (moment(item.date).format('DD') == '01') {
                 PLAN.push({ date: item.date, value: 0, prev: 0 });
                 PICKLIST.push({ date: item.date, value: 0 });
@@ -254,7 +249,6 @@ function DOPage() {
             PO.push({ date: item.date, value: item.po });
             loop++;
         });
-        console.log(DATA_FORMAT)
         setDOResult(DATA_FORMAT);
         return DATA_FORMAT;
     }
@@ -263,7 +257,6 @@ function DOPage() {
         // console.log(vdMaster)
         prodLead = vdMaster[0].vdProdLead - 1;
         endDate = moment().add((prodLead + 7), 'days').format('YYYY-MM-DD');
-        console.log(endDate)
         var sDate = moment(startDate);
         var fDate = moment(endDate);
         while (!sDate.isSame(fDate)) {
@@ -287,12 +280,10 @@ function DOPage() {
         });
         return column;
     }
-    function VIEW_DO(row, item) {
-        // console.log(item)
+    function VIEW_DO(row, item, dateLoop) {
         prodLead = VdMasters[0].vdProdLead - 1;
         fixDate = moment().add(prodLead, 'days');
         runDate = moment(fixDate.add(1, 'days')).add(7, 'days')
-        // let vdMaster = suppliers.filter((o,i)=>o.)
         let val = item.value;
         let date = moment(item.date);
         let vender = row.vender;
@@ -306,19 +297,25 @@ function DOPage() {
         var dtLoop = moment(item.date);
         var dtNow = moment()
         let isGradient = false;
+        let isDayAfterAfternoon = true;  // หลังบ่าย 3 ของวันสุด้ทายในช่วง FIX
+        if (moment(dateLoop).add(1, 'days').format('YYYYMMDD') == fixDate.format('YYYYMMDD')) {
+            if (moment().format('HH:mm:ss') < moment(`${fixDate.format('YYYYMMDD')} 150100`).format('HH:mm:ss')) {
+                isDayAfterAfternoon = false;
+            }
+        }
         if (dtLoop.format('YYYYMMDD') == dtNow.add('days', prodLead).format('YYYYMMDD')) {
             if (moment().format('YYYYMMDD HH:mm:ss') < moment().format('YYYYMMDD 15:01:00')) {
                 isGradient = true;
             }
         }
+        // console.log(IsFixDay, isDayAfterAfternoon)
         var res = <td className={`w-[150px] text-white ${IsHoliday && 'isHoliday'} ${IsHolidayOfVender && 'IsHolidayOfVender'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? 'gradientTbody' : ''}`}>
             {
-                val > 0 ? <h2 class="doLineHorizontal"><NumericFormat className={`cursor-pointer ${row.classs}`} displayType='text' allowLeadingZeros thousandSeparator="," value={val} decimalScale={2} onClick={() => IsFixDay ? handleOpenEditDO(row, date.format('YYYYMMDD'), val) : false} /></h2> : (IsHolidayOfVender ? <h2 class="doLineHorizontal" onClick={() => IsFixDay ? handleOpenEditDO(row, date.format('YYYYMMDD'), val) : false}>&nbsp;</h2> : <CloseIcon className={`text-red-500`} />)
+                val > 0 ? <h2 class="doLineHorizontal"><NumericFormat className={`cursor-pointer ${row.classs}`} displayType='text' allowLeadingZeros thousandSeparator="," value={val} decimalScale={2} onClick={() => (IsFixDay && isDayAfterAfternoon) ? handleOpenEditDO(row, date.format('YYYYMMDD'), val) : (IsFixDay && !isDayAfterAfternoon ? alert('ไม่สามารถแก้ไขได้ ต้องรอหลัง 15:00 ') : false)} /></h2> : (IsHolidayOfVender ? <h2 class="doLineHorizontal" onClick={() => (IsFixDay && isDayAfterAfternoon) ? handleOpenEditDO(row, date.format('YYYYMMDD'), val) : (IsFixDay && !isDayAfterAfternoon ? alert('ไม่สามารถแก้ไขได้ ต้องรอหลัง 15:00 ') : false)}>&nbsp;</h2> : <CloseIcon className={`text-red-500`} />)
             }
         </td>;
         return res;
     }
-
     function VIEW_PLAN(row, item) {
         let val = item.value;
         let prev = typeof item.prev != 'undefined' ? item.prev : val;
@@ -498,7 +495,7 @@ function DOPage() {
                             <span>&nbsp;D/O RUNNING : </span>
                             <span className='text-[#4effca]'>{RunningCode != '' ? RunningCode : '-'}</span>
                             {
-                                reducer.privilege.some(item => (item.refCode == 'BTN_RUN_DO' && item.note == 'true')) && <ButtonItem classs='animate-bounce' handle={setOpenApprDo} handleKey={true} icon={<ElectricBoltIcon className='md:text-[1.5vw] lg:text-[1vw] mr-1' />} label='ออกแผน (แก้ไข)' />
+                                CHECK_PRIVILEGE(reduxPrivilege, empcode, 'DO', 'DO', 'USER', 'RUNDO', redux.id).length > 0 && <ButtonItem classs='animate-bounce' handle={setOpenApprDo} handleKey={true} icon={<ElectricBoltIcon className='md:text-[1.5vw] lg:text-[1vw] mr-1' />} label='ออกแผน (แก้ไข)' />
                             }
                         </div>
                         <div className='w-[40%]  md:w-[25%] lg:w-[40%]'>
@@ -650,7 +647,7 @@ function DOPage() {
                                                             if (item.name == 'plan') {
                                                                 view = VIEW_PLAN(item, i, index)
                                                             } else if (item.name == 'do') {
-                                                                view = VIEW_DO(item, i, index);
+                                                                view = VIEW_DO(item, i, i.date);
                                                             } else if (item.name == 'stock') {
                                                                 view = VIEW_COMMON(item, i, index);
                                                             } else if (item.name == 'pickList') {

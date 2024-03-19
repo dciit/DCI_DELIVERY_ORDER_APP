@@ -18,7 +18,6 @@ function NavBarComponent() {
         if (!once) {
             let menuIndex = 0;
             if (reducer.menuIndex === '') {
-                console.log(999)
                 if (reducer.typeAccount == 'supplier') {
                     menuIndex = menu.findIndex(x=>x.value == 'supplier');
                     dispatch({ type: 'NAV_MENU_SELECT', payload: menuIndex });
@@ -28,7 +27,6 @@ function NavBarComponent() {
                     navigate(import.meta.env.VITE_PATH + menu[0].path)
                 }
             }else{
-                console.log(reducer.menuIndex)
                 dispatch({ type: 'NAV_MENU_SELECT', payload: reducer.menuIndex });
                 navigate(import.meta.env.VITE_PATH + menu[reducer.menuIndex].path)
             }
@@ -44,7 +42,7 @@ function NavBarComponent() {
             {
                 menu.map((item, key) => {
                     var hidden = 'hidden';
-                    hidden = reducer.privilege.some(pri => (pri.refCode == 'MENU' && pri.note == item.value)) ? '' : 'hidden';
+                    hidden = reducer.navPrivilege.some(pri => (pri.refCode == 'MENU' && pri.note == item.value)) ? '' : 'hidden';
                     return <div key={key} className={`${hidden} ${reducer.menuIndex == key ? ' bg-[#4effca] text-[#080b0f]' : 'bg-[#212327]'} w-full rounded-[8px]  px-[8px] py-[8px] cursor-pointer transition ease-in-out delay-50  hover:-translate-y-1 hover:scale-105 hover:bg-[#4effca] hover:text-[#080b0f] duration-300 shadow-mtr`} onClick={() => openMenu(key, PATH + item.path)}>
                         <Stack alignItems={'center'}>
                             <GridViewIcon />
