@@ -218,3 +218,19 @@ export function API_GET_LOG(param) {
         })
     })
 }
+
+export function API_LIST_DRAWING_DELIVERY_OF_DAY(param) {
+    return new Promise((resolve) => {
+        http.post(`/GET_LIST_DRAWING_DELIVERY_OF_DAY`, param).then((res) => {
+            resolve(res.data);
+        })
+    })
+}
+
+export function API_INSERT_LIST_DRAWING_DELIVERY_OF_DAY(param) {
+    return new Promise((resolve) => {
+        http.post(`/INSERT_LIST_DRAWING_DELIVERY_OF_DAY`, param).then((res) => {
+            resolve(res.data);
+        })
+    })
+}

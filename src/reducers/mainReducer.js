@@ -32,7 +32,7 @@ const initialState = {
     // }
     privilegeFilter: {
         employee: ['plan', 'do', 'stock'],
-        supplier: ['do', 'doact']
+        supplier: ['do', 'doact','delivery_management']
     },
     dayOfWeek: [
         "Sun",

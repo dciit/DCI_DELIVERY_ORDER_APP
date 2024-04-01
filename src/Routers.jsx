@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import PartSupply from "./pages/PartSupply";
 import DOPage from "./pages/DOPage";
 import { persistor } from './reducers/store'
+import DeliveryManagement from "./pages/delivery.management";
 const Routers = () => {
     const dispatch = useDispatch();
     const VITE_BASE_PATH = ''
@@ -32,12 +33,12 @@ const Routers = () => {
                     <Route path={VITE_BASE_PATH + '/dopo'} element={<DoPoPage />} />
                     <Route path={VITE_BASE_PATH + '/stock'} element={<StockPage />} />
                     <Route path={VITE_BASE_PATH + '/po'} element={<PoPage />} />
-                    <Route path={VITE_BASE_PATH + '/delivery'} element={<DeliveryOfDayPage />} />
+                    <Route path={VITE_BASE_PATH + '/delivery'} element={<DeliveryManagement />} />
                     <Route path={VITE_BASE_PATH + '/master'} element={<MasterPage />} />
                     <Route path={VITE_BASE_PATH + '/test'} element={<Test />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
-                <Route path='/partsupply' element={<PartSupply />} />
+                <Route path='do/partsupply' element={<PartSupply />} />
             </Routes>
         </BrowserRouter>
     );

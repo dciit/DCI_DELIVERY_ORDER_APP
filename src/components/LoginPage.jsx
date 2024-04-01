@@ -58,6 +58,7 @@ function LoginPage() {
                 }).then(async (jwt) => {
                     if (jwt.data.status) {
                         let privilege =  await API_PRIVILEGE('DO','DO');
+                        console.log(privilege)
                         dispatch({ type: 'SET_PRIVILEGE', payload: privilege });
                         dispatch({ type: 'TYPE_ACCOUNT', payload: 'employee' })
                         dispatch({ type: 'JWT', payload: jwt });

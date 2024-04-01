@@ -39,12 +39,13 @@ function DialogEditDO(props) {
         }
         let CurDT = moment();
         if (moment({ hour: 15, minute: 0, second: 0 }).isAfter(moment({ hour: CurDT.hour(), minute: CurDT.minute(), second: CurDT.second() }))) { // เวลาปัจจุบัน อยู่หลังบ่าย 3 แล้วหรือยัง ? ถ้าใช่ Day -1
-            data.ymd = moment(data.ymd, 'YYYYMMDD').add(-1, 'month');
+            data.ymd = moment(data.ymd, 'YYYYMMDD').format('YYYYMMDD');
         }
         setBtnLoad(true);
         data.doPrev = data?.doVal;
         data.doVal = (val != '' && val != null) ? parseInt(val) : 0;
         data.empCode = reducer.id;
+        console.log(data);
         let res = await API_EDIT_DO(data);
         if (res.status) {
             let dataOfResult = dataDO.filter((o => o.part == data.partno && o.name == 'do'));
