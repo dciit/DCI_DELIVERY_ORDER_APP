@@ -300,7 +300,7 @@ function PlanPage() {
         <>
             {
                 reducer.login ? <div className={`overflow-hidden w-full  p-6 ${themeSys ? 'night' : 'light'}`}>
-                    <Grid container className='sm:h-auto bg-[#181818]  pl-4 line-b'>
+                    <Grid container className='sm:h-auto bg-[]  pl-4 line-b'>
                         <Grid item xs={12} className='flex items-center'>
                             {
                                 reducer.typeAccount == 'employee' &&
@@ -382,7 +382,7 @@ function PlanPage() {
                                         })
                                     }
                                 </Select>
-                            </FormControl>
+                            </FormControl>  
                             <ButtonItem handle={GetPlan} handleKey={SupplierSelected} label='ค้นหา' icon={<SearchIcon className='md:text-[1.5vw] lg:text-[1vw]  mr-1' />} />
                         </Grid>
                     </Grid>

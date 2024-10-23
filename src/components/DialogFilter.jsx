@@ -1,25 +1,34 @@
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, FormGroup, Stack, Table, TableBody, TableCell, TableRow, Typography } from '@mui/material'
-import React from 'react'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, FormGroup, Stack, Table, TableBody, TableCell, TableRow, Typography } from '@mui/material'
+import { Checkbox } from 'antd';
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 function DialogFilter(props) {
     const { open, close, refresh } = props;
     const dispatch = useDispatch();
     const reducer = useSelector(state => state.mainReducer);
+    const hiddenPartNoPlan = reducer?.hiddenPartNoPlan != undefined ? reducer.hiddenPartNoPlan : true;
     const FN_UPDATE_FILTER = (e, name) => {
         dispatch({ type: 'UPDATE_FILTER', checked: e.checked, name: name });
         refresh();
     }
+    useEffect(() => {
+        console.log(hiddenPartNoPlan)
+    },[hiddenPartNoPlan])
     return (
-        <Dialog open={open} fullWidth maxWidth={'sm'}>
+        <Dialog open={open} onClose={() => close(false)} fullWidth maxWidth={'sm'}>
             <DialogTitle>กรองข้อมูล</DialogTitle>
             <DialogContent dividers>
-                <FormGroup>
+                <div className='flex flex-col gap-2'>
+                    <Checkbox checked={hiddenPartNoPlan} onChange={(e) => {
+                        console.log(e.target.checked)
+                        dispatch({ type: 'SET_HIDDEN_PART_NO_PLAN', payload: e.target.checked })
+                    }}>ปิดการแสดงรายการที่ไม่แผนการผลิต</Checkbox>
                     {
-                        reducer.filters?.map((item, index) => (
-                            <FormControlLabel key={index} control={<Checkbox checked={item.checked} value={item.name} onChange={(e) => FN_UPDATE_FILTER(e.target, item.name)} />} label={item.label} disabled={item.disabled} />
-                        ))
+                        reducer.filters?.map((item, index) => {
+                            return <Checkbox key={index} checked={item.checked} value={item.name} onChange={(e) => FN_UPDATE_FILTER(e.target, item.name)} className='uppercase'>{item.name}</Checkbox>
+                        })
                     }
-                </FormGroup>
+                </div>
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => close(false)} >ปิดหน้าต่าง</Button>

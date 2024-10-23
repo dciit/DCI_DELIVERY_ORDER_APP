@@ -239,7 +239,6 @@ function App() {
     setOpenDialogLogout(false);
   }
   const handleLogout = () => {
-    console.log('123')
     dispatch({ type: 'CLEAR_LOGIN' });
     setOpenDialogLogout(false);
   }

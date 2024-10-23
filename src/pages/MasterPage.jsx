@@ -1,4 +1,4 @@
-import { Alert, Button, ButtonGroup, Checkbox, CircularProgress, Divider, FormControl, FormControlLabel, FormGroup, Grid, IconButton, InputBase, InputLabel, MenuItem, Paper, Snackbar, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Backdrop } from '@mui/material'
+import { Alert, ButtonGroup, Checkbox, CircularProgress, Divider, FormControl, FormControlLabel, FormGroup, Grid, IconButton, InputBase, InputLabel, MenuItem, Paper, Snackbar, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Backdrop } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { selectStyle } from '../Styleds';
 import { useDispatch, useSelector } from 'react-redux';
@@ -6,14 +6,12 @@ import { GetVenderDetail, ServiceGetPartDetail, ServiceGetSupplier, ServiceUpdat
 import SearchIcon from '@mui/icons-material/Search';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import DialogVenderDetail from '../components/DialogVenderDetail';
-import Select from 'react-select'
+import { Button, Select } from 'antd';
+import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import ModalAddDrawing from '../components/modal.add.drawing';
 function MasterPage() {
-    const [listType, setListType] = useState([{
-        value: 'part', label: 'PART'
-    }, {
-        value: 'vender', label: 'VENDER'
-    }])
-    const [typeSelected, setTypeSelected] = useState(listType[0]);
+    const [listType, setListType] = useState(['part', 'vender'])
+    const [typeSelected, setTypeSelected] = useState('part');
     const [filterContent, setFilterContent] = useState({
         data: [],
         selected: '',
@@ -33,34 +31,30 @@ function MasterPage() {
     const [loadingVenderDetail, setLoadingVenderDetail] = useState(true);
     const [openBackdrop, setOpenBackdrop] = useState(false);
     const reducer = useSelector(state => state.mainReducer);
+    const filter = reducer?.filter;
     const dispatch = useDispatch();
     var once = false;
-
+    const [openModalAddDrawing, setOpenModalAddDrawing] = useState(false);
     useEffect(() => {
         if (!once) {
             async function getData() {
                 setLoading(true);
-                if (typeSelected.value == 'part') {
+                if (typeSelected == 'part') {
                     const venders = await ServiceGetSupplier("all");
-
-                    var vdSelect = venders.data.map((item, index) => (
-                        // { value: item.VD_CODE, label: (item.VD_DESC + ' (' + item.VD_CODE + ')') }
+                    var vdSelect = venders.data.map((item) => (
                         { value: item.vdCode, label: (item.vdDesc + ' (' + item.vdCode + ')') }
                     ));
-                    vdSelect = vdSelect.filter(function (el) {
-                        return el.value != '' && el.value != null
-                    })
-                    setListVender(vdSelect);
+                    setListVender(venders.data);
                     if (Object.keys(vdSelect).length && reducer.filter.master.vender == '') {
-                        setFilterContent({ ...filterContent, vender: vdSelect[0] })
-                        reducer.filter.master.vender = vdSelect[0]
+                        setFilterContent({ ...filterContent, vender: venders.data[0] })
+                        reducer.filter.master.vender = venders.data[0]
                     }
-                    const content = await getMaster({ type: typeSelected.value, vender: reducer.filter.master.vender.value });
+                    console.log(reducer.filter.master?.vender?.vdCode)
+                    const content = await getMaster({ type: typeSelected, vender: reducer.filter.master?.vender?.vdCode == undefined ? reducer.filter.master.vender : reducer.filter.master.vender.vdCode });
                     setData(content);
                     setDataDefault(content);
                     setLoading(false);
                 } else {
-                    // const content = await ServiceVender();
                     const content = await ServiceGetSupplier("all");
                     setData(content.data);
                     setDataDefault(content.data);
@@ -72,15 +66,11 @@ function MasterPage() {
         }
     }, [effect]);
 
-    useEffect(()=>{
-        console.log('effect data');
-        console.log(data)
-    },[data])
 
     const filterData = (search) => {
         const filteredRows = dataDefault.filter((row) => {
             if (typeSelected.value == 'vender') {
-                return row.vdDesc.toLowerCase().includes(event.target.value.toLowerCase()) || row.vdCode.toLowerCase().includes(event.target.value.toLowerCase()) || (row.vdMinDelivery +'').includes(event.target.value.toLowerCase()) || (row.vdMaxDelivery+'').includes(event.target.value.toLowerCase())
+                return row.vdDesc.toLowerCase().includes(event.target.value.toLowerCase()) || row.vdCode.toLowerCase().includes(event.target.value.toLowerCase()) || (row.vdMinDelivery + '').includes(event.target.value.toLowerCase()) || (row.vdMaxDelivery + '').includes(event.target.value.toLowerCase())
             } else {
                 return row.partno.toLowerCase().includes(event.target.value.toLowerCase()) || row.description.toLowerCase().includes(event.target.value.toLowerCase()) || row.vdCode.toLowerCase().includes(event.target.value.toLowerCase())
             }
@@ -113,22 +103,27 @@ function MasterPage() {
             setOpenDialogPartDetail(false);
         })
     }
+    useEffect(() => {
+        dispatch({
+            type: 'MASTER_SET_FILTER', payload: { ...reducer.filter.master, type: typeSelected }
+        })
+    }, [typeSelected])
     return (
-        <div className='stock-page w-full flex'>
-            <div className={`overflow-hidden w-full p-6  ${reducer?.theme ? 'night' : 'light'}`}>
-                <div className='flex flex-col w-full h-full box-content'>
+        <div className='stock-page w-full flex h-[100%]'>
+            <div className={`overflow-hidden w-full p-6 h-[100%] `}>
+                <div className='flex flex-col w-full h-[100%] box-content'>
                     <div className='flex gap-2 box-filter line-b'>
                         <div className='flex items-center gap-2 flex-1'>
-                            <span className='color-mtr'>TYPE</span>
-                            <Select options={listType} className='w-full' defaultValue={typeSelected} onChange={(e) => {
+                            <span className='text-[#5f5ce8]'>TYPE</span>
+                            <Select options={listType.map((item, index) => ({ value: item, label: item.toUpperCase() }))} className='w-full' value={typeSelected} onChange={(e) => {
                                 setTypeSelected(e);
                                 setEffect(!effect)
                             }} />
                         </div>
                         {
-                            typeSelected.value == 'part' && <div className='flex items-center flex-1 gap-2'>
+                            typeSelected == 'part' && <div className='flex items-center flex-1 gap-2'>
                                 <span className='color-mtr'>VENDER</span>
-                                <Select options={listVender} className='w-full' value={reducer.filter.master.vender} defaultValue={venderSelected} onChange={(e) => {
+                                <Select options={listVender.map((item, index) => ({ value: item.vdCode, label: (item.vdDesc + ' (' + item.vdCode + ')') }))} className='w-full' value={reducer.filter.master?.vender?.vdCode == undefined ? reducer.filter.master.vender : reducer.filter.master.vender.vdCode} defaultValue={venderSelected} onChange={(e) => {
                                     setVenderSelected(e);
                                     dispatch({
                                         type: 'MASTER_SET_FILTER', payload: { vender: e }
@@ -138,86 +133,89 @@ function MasterPage() {
                             </div>
                         }
                     </div>
-                    <div className='h-full w-full text-center p-6'>
+                    <div className='h-[100%] w-full text-center py-3'>
                         <div className='flex w-full h-full flex-col items-start gap-2 pb-[2em]'>
                             <div className='flex w-full justify-between items-center tag-search'>
-                                <Typography className='text-white '>ระบบจัดการข้อมูล</Typography>
-                                <Paper
-                                    component="form"
-                                    sx={{ p: '2px 8px', display: 'flex', alignItems: 'center', width: 250 }}
-                                >
-                                    <InputBase
-                                        sx={{ ml: 1, flex: 1 }}
-                                        placeholder="ค้นหาสิ่งที่คุณต้องการ"
-                                        inputProps={{ 'aria-label': 'search google maps' }}
-                                        onChange={(e) => filterData(e.target.value)}
-                                    />
-                                    <IconButton type="button" sx={{ p: '0px' }} aria-label="search">
-                                        <SearchIcon />
-                                    </IconButton>
-                                </Paper>
+                                <Typography className='text-[#5f5f5f] '>ระบบจัดการข้อมูล</Typography>
+
+                                <div className='flex  items-center gap-2'>
+                                    <Button type='primary' icon={<PlusCircleOutlined />} onClick={() => setOpenModalAddDrawing(true)}>Add Drawing</Button>
+                                    <Paper
+                                        component="form"
+                                        sx={{ p: '2px 8px', display: 'flex', alignItems: 'center', width: 250 }}
+                                    >
+                                        <InputBase
+                                            sx={{ ml: 1, flex: 1 }}
+                                            placeholder="ค้นหาสิ่งที่คุณต้องการ"
+                                            inputProps={{ 'aria-label': 'search google maps' }}
+                                            onChange={(e) => filterData(e.target.value)}
+                                        />
+                                        <IconButton type="button" sx={{ p: '0px' }} aria-label="search">
+                                            <SearchIcon />
+                                        </IconButton>
+                                    </Paper>
+                                </div>
                             </div>
-                            <TableContainer component={Paper} className='h-fit'>
-                                <Table size='small' id="tbContent">
+                            <div className='bg-white overflow-auto h-[100%] w-full'>
+                                <Table size='small' id="tbContent" stickyHeader={true}>
                                     <TableHead>
                                         <TableRow>
                                             {
-                                                typeSelected.value == 'vender' ? <>
-                                                    <TableCell className='text-center'>#</TableCell>
-                                                    <TableCell className='text-center'>รหัส</TableCell>
-                                                    <TableCell className='text-center'>ชื่อ</TableCell>
-                                                    <TableCell className='text-right'>Prod Lead (D)</TableCell>
-                                                    <TableCell className='text-center'>รอบต่อวัน</TableCell>
-                                                    <TableCell className='text-center'>จัดส่งขั้นต่ำ (กล่อง)</TableCell>
-                                                    <TableCell className='text-center'>จัดส่งสูงสุด (กล่อง)</TableCell>
-                                                    <TableCell className='text-center'>เครื่องมือ</TableCell>
+                                                typeSelected == 'vender' ? <>
+                                                    <TableCell className='text-center border'>รหัส</TableCell>
+                                                    <TableCell className='text-start border'>ชื่อ</TableCell>
+                                                    <TableCell className='text-right'>PU Leadtime (D)</TableCell>
+                                                    <TableCell className='text-center border'>รอบต่อวัน</TableCell>
+                                                    <TableCell className='text-center border'>จัดส่งขั้นต่ำ (กล่อง)</TableCell>
+                                                    <TableCell className='text-center border'>จัดส่งสูงสุด (กล่อง)</TableCell>
+                                                    <TableCell className='text-center border'>เครื่องมือ</TableCell>
                                                 </> :
                                                     <>
-                                                        <TableCell className='text-center'>CODE</TableCell>
-                                                        <TableCell className='text-center'>NAME</TableCell>
-                                                        <TableCell className='text-center'>UNIT</TableCell>
-                                                        <TableCell className='text-center'>PDLT</TableCell>
-                                                        <TableCell className='text-center'>BOX QTY</TableCell>
-                                                        <TableCell className='text-center'>BOX MIN</TableCell>
-                                                        <TableCell className='text-center'>BOX MAX</TableCell>
-                                                        <TableCell className='text-center'>VENDER</TableCell>
-                                                        <TableCell className='text-center'>#</TableCell>
+                                                        <TableCell className='pl-3 border'>CODE</TableCell>
+                                                        <TableCell className='pl-3 border'>NAME</TableCell>
+                                                        <TableCell className='text-center border'>UNIT</TableCell>
+                                                        <TableCell className='text-center border'>PDLT</TableCell>
+                                                        <TableCell className='text-center border'>BOX QTY</TableCell>
+                                                        <TableCell className='text-center border'>BOX MIN</TableCell>
+                                                        <TableCell className='text-center border'>BOX MAX</TableCell>
+                                                        <TableCell className='text-center border'>VENDER</TableCell>
+                                                        <TableCell className='text-center border'>#</TableCell>
                                                     </>
                                             }
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {
-                                            loading ? <TableRow><TableCell colSpan={typeSelected.value == 'vender' ? 6 : 9} className='text-center'><CircularProgress /></TableCell></TableRow> : (
+                                            loading ? <TableRow><TableCell colSpan={typeSelected == 'vender' ? 6 : 9} className='text-center'><CircularProgress /></TableCell></TableRow> : (
                                                 data.length ? data.map((item, index) => {
-                                                    return typeSelected.value == 'vender' ? <TableRow key={index}>
-                                                        <TableCell className='text-center'>{index + 1}</TableCell>
-                                                        <TableCell className='text-center'>{item?.vdCode}</TableCell>
-                                                        <TableCell>{item?.vdDesc}</TableCell>
-                                                        <TableCell className='text-right font-bold text-orange-600 bg-orange-100'>{`${item?.vdProdLead}`}</TableCell>
-                                                        <TableCell className='text-right font-bold text-blue-600 bg-blue-100'>{item?.vdRound}</TableCell>
-                                                        <TableCell className='text-right text-red-500 font-bold bg-red-100'>{item?.vdMinDelivery}</TableCell>
-                                                        <TableCell className='text-right text-green-600 font-bold bg-green-100'>{item?.vdMaxDelivery}</TableCell>
-                                                        <TableCell className='text-center'><div className='flex gap-1 justify-center'><Button variant='contained' size='small' onClick={() => dialogVenderDetail(item?.vdCode)}><SearchIcon /> แก้ไข</Button></div></TableCell>
+                                                    return typeSelected == 'vender' ? <TableRow key={index}>
+                                                        <TableCell className='text-center  border'>{item?.vdCode}</TableCell>
+                                                        <TableCell className='font-bold border '>{item?.vdDesc}</TableCell>
+                                                        <TableCell className='text-right border font-semibold'>{`${item?.vdProdLead}`}</TableCell>
+                                                        <TableCell className='text-right border font-semibold'>{item?.vdRound}</TableCell>
+                                                        <TableCell className='text-right border font-semibold'>{item?.vdMinDelivery != undefined ? Number(item.vdMinDelivery).toLocaleString('en') : ''}</TableCell>
+                                                        <TableCell className='text-right border font-semibold'>{item?.vdMaxDelivery != undefined ? Number(item.vdMaxDelivery).toLocaleString('en') : ''}</TableCell>
+                                                        <TableCell className='text-center'><div className='flex gap-1 justify-center'>
+                                                            <Button type='primary' onClick={() => dialogVenderDetail(item?.vdCode)} icon={<EditOutlined />}>  แก้ไข</Button></div></TableCell>
                                                     </TableRow> :
                                                         <TableRow key={index} className='tdMaster'>
-                                                            <TableCell className='text-left pl-4 font-bold'>{item?.partno}  {item?.cm}</TableCell>
+                                                            <TableCell className='border text-left pl-4 font-bold'>{item?.partno}  {item?.cm}</TableCell>
                                                             <TableCell>{item?.description}</TableCell>
-                                                            <TableCell className='text-center font-bold'>{item?.unit}</TableCell>
-                                                            <TableCell className='text-right font-bold text-orange-600 bg-orange-100'>{item?.pdlt}</TableCell>
-                                                            <TableCell className='text-right font-bold text-blue-700 bg-blue-100'>{item?.boxQty}</TableCell>
-                                                            <TableCell className='text-right font-bold text-red-500 bg-red-100'>{item?.boxMin}</TableCell>
-                                                            <TableCell className='text-right font-bold text-green-600 bg-green-100'>{item?.boxMax}</TableCell>
-                                                            <TableCell className='text-right font-bold'>{item?.vdCode}</TableCell>
-                                                            <TableCell className='text-center'><div className='flex gap-1 justify-center'><Button variant='contained' size='small' onClick={() => handleOpenDialogPartDetail(item?.partno)}><SearchIcon /> แก้ไข</Button></div></TableCell>
+                                                            <TableCell className='border text-center font-bold'>{item?.unit}</TableCell>
+                                                            <TableCell className='border text-right font-bold '>{item?.pdlt}</TableCell>
+                                                            <TableCell className='border text-right font-bold '>{item?.boxQty != undefined ? Number(item.boxQty).toLocaleString('en') : ''}</TableCell>
+                                                            <TableCell className='border text-right font-bold '>{item?.boxMin != undefined ? Number(item.boxMin).toLocaleString('en') : ''}</TableCell>
+                                                            <TableCell className='border text-right font-bold '>{item?.boxMax != undefined ? Number(item.boxMax).toLocaleString('en') : ''}</TableCell>
+                                                            <TableCell className='border text-right font-bold'>{item?.vdCode}</TableCell>
+                                                            <TableCell className='border text-center'><div className='flex gap-1 justify-center'><Button type='primary' size='small' onClick={() => handleOpenDialogPartDetail(item?.partno)} icon={<EditOutlined />}>แก้ไข</Button></div></TableCell>
                                                         </TableRow>
                                                 }) :
-                                                    <TableRow><TableCell colSpan={typeSelected.value == 'vender' ? 6 : 8} className='text-center'>ไม่พบข้อมูลที่คุณค้นหา</TableCell></TableRow>
+                                                    <TableRow><TableCell colSpan={typeSelected == 'vender' ? 6 : 8} className='text-center'>ไม่พบข้อมูลที่คุณค้นหา</TableCell></TableRow>
                                             )
                                         }
                                     </TableBody>
                                 </Table>
-                            </TableContainer>
+                            </div>
                             <div className='flex justify-end w-full text-white'>
                                 DataCount : {dataDefault.length}
                             </div>
@@ -359,6 +357,7 @@ function MasterPage() {
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
+            <ModalAddDrawing open={openModalAddDrawing} setOpen={setOpenModalAddDrawing} />
         </div >
     )
 }

@@ -89,7 +89,6 @@ export function UPDATE_DO(data) {
 
 export function getMaster(param) {
     return new Promise(resolve => {
-        console.log('123')
         http.post('/master/get', param).then((res) => {
             resolve(res.data);
         })
@@ -133,6 +132,15 @@ export function ServiceUpdateVenderDetail(data) {
     return http.post('/vender/update/detail', data);
 }
 
+export function ApiUpdateVenderSTD(param) {
+    return new Promise(resolve => {
+        http.post('/vender/update/detail', param).then((res) => {
+            resolve(res.data);
+        }).catch((e) => {
+            console.log(e);
+        });
+    })
+}
 
 export function ServiceUpdateMasterPart(data) {
     return http.post('/part/update', data);
@@ -150,9 +158,9 @@ export function ServiceGetDataTimeSchedule(param) {
     })
 }
 
-export function API_GET_DO(buyer, vdCode, sDate, fDate) {
+export function API_GET_DO(buyer, vdCode, sDate, fDate, hiddenPartNoPlan) {
     return new Promise((resolve) => {
-        http.post('/getplans', { vdCode: vdCode, buyer: buyer, startDate: sDate, endDate: fDate }).then((res) => {
+        http.post('/getplans', { vdCode: vdCode, buyer: buyer, startDate: sDate, endDate: fDate, hiddenPartNoPlan: hiddenPartNoPlan }).then((res) => {
             resolve(res.data);
         });
     })
@@ -233,4 +241,79 @@ export function API_INSERT_LIST_DRAWING_DELIVERY_OF_DAY(param) {
             resolve(res.data);
         })
     })
+}
+
+
+
+export function API_VIEW_HISTORY_PLAN(param) {
+    return new Promise((resolve) => {
+        http.post(`/VIEW_HISTORY_PLAN`, param).then((res) => {
+            resolve(res.data);
+        })
+    })
+}
+
+
+
+export function API_EDIT_CALENDAR() {
+    return new Promise((resolve) => {
+        http.post(`/editCalendar`, param).then((res) => {
+            resolve(res.data);
+        });
+    })
+}
+
+export function API_CALENDAR_INSERT(param) {
+    return new Promise((resolve) => {
+        http.post(`CALENDAR/INSERT`, param).then((res) => {
+            resolve(res.data);
+        })
+    });
+}
+
+
+export function API_CALENDAR_GET(yyyy) {
+    return new Promise((resolve) => {
+        http.get(`CALENDAR/GET/${yyyy}`).then((res) => {
+            resolve(res.data);
+        })
+    });
+}
+export function API_CALENDAR_GET_BY_DATE(ymd) {
+    return new Promise((resolve) => {
+        http.get(`CALENDAR/DATE/GET/${ymd}`).then((res) => {
+            resolve(res.data);
+        })
+    });
+}
+
+export function API_CALENDAR_DEL(ymd) {
+    return new Promise((resolve) => {
+        http.get(`CALENDAR/DEL/${ymd}`).then((res) => {
+            resolve(res.data);
+        })
+    });
+}
+
+export function API_GET_HISTORY_DO(param) {
+    return new Promise((resolve) => {
+        http.post(`HISTORY/DO`, param).then((res) => {
+            resolve(res.data);
+        })
+    });
+}
+
+export function API_HISTORY_EDIT_DO(param) {
+    return new Promise((resolve) => {
+        http.post(`HISTORY/EDIT/DO`, param).then((res) => {
+            resolve(res.data);
+        })
+    });
+}
+export function APIAddPartMaster(param) {
+    return new Promise((resolve) => {
+        http.post(`AddPartMaster`, param).then((res) => {
+            resolve(res.data);
+        })
+    });
 }

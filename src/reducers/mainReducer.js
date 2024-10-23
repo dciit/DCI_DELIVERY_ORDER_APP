@@ -6,15 +6,16 @@ const initialState = {
     division: '',
     version: '0',
     module: '',
-    filters: [{ name: 'plan', label: 'Prod Plan (Plan * BOM)', index: 1, disabled: true, checked: true, bgColor: 'bg-yellow-500' },
-    { name: 'pickList', label: 'PickList', index: 2, disabled: false, checked: false, bgColor: 'bg-red-500' },
-    // { name: 'produse', label: 'Prod.Use', index: 3, disabled: false, checked: false, bgColor: 'bg-orange-500' },
-    { name: 'do', label: 'D/O Plan', index: 4, disabled: true, checked: true, bgColor: 'bg-green-500' },
-    { name: 'doAct', label: 'D/O Act.', index: 5, disabled: false, checked: true, bgColor: 'bg-teal-400' },
-    { name: 'stock', label: 'P/S Stock Simulate', index: 6, disabled: true, checked: true, bgColor: 'bg-blue-600' },
-    { name: 'wip', label: 'WIP', index: 7, disabled: true, checked: false, bgColor: 'bg-gray-400' },
-    { name: 'po', label: 'PO', index: 8, disabled: false, checked: false, bgColor: 'bg-teal-500' },
-        // { name: 'stock', label: 'P/S Stock', index: 9, disabled: false, checked: false, bgColor: 'bg-orange-500' },
+    filters: [
+        { name: 'plan', label: 'Prod Plan (Plan * BOM)', index: 1, disabled: true, checked: true, bgColor: 'bg-yellow-500' },
+        { name: 'pickList', label: 'PickList', index: 2, disabled: false, checked: false, bgColor: 'bg-red-500' },
+        // { name: 'produse', label: 'Prod.Use', index: 3, disabled: false, checked: false, bgColor: 'bg-orange-500' },
+        { name: 'do', label: 'D/O Plan', index: 4, disabled: true, checked: true, bgColor: 'bg-green-500' },
+        { name: 'doAct', label: 'D/O Act.', index: 5, disabled: false, checked: true, bgColor: 'bg-teal-400' },
+        { name: 'stock', label: 'P/S Stock Simulate', index: 6, disabled: true, checked: true, bgColor: 'bg-blue-600' },
+        { name: 'wip', label: 'WIP', index: 7, disabled: true, checked: false, bgColor: 'bg-gray-400' },
+        { name: 'po', label: 'PO', index: 8, disabled: false, checked: false, bgColor: 'bg-teal-500' },
+        { name: 'pofifo', label: 'PO FIFO', index: 9, disabled: true, checked: true, bgColor: 'bg-teal-500' },
     ],
     menuLeft: [{
         path: '/do', text: 'D/O PLAN', value: 'd/o'
@@ -26,13 +27,12 @@ const initialState = {
         path: '/po', text: 'PO', value: 'po'
     }, {
         path: '/master', text: 'MASTER', value: 'master'
+    }, {
+        path: '/calendar', text: 'MASTER', value: 'master'
     }],
-    // , {
-    //     path: '/partsupply', text: 'P/S', value: 'partsupply', link: ''
-    // }
     privilegeFilter: {
-        employee: ['plan', 'do', 'stock'],
-        supplier: ['do', 'doact','delivery_management']
+        employee: ['plan', 'do', 'stock', 'pofifo'],
+        supplier: ['do', 'doact', 'delivery_management']
     },
     dayOfWeek: [
         "Sun",
@@ -68,11 +68,23 @@ const initialState = {
     partMaster: [],
     venderMaster: [],
     privilege: [],
-    dvcd: ''
+    dvcd: '',
+    activeMenu: '',
+    hiddenNoPlan: true // ปิด/เปิด การแสดงผลรายการ Part ที่ไม่มีแผน
 }
 
 const IndexReducer = (state = initialState, action) => {
     switch (action.type) {
+        case 'SET_HIDDEN_PART_NO_PLAN':
+            return {
+                ...state,
+                hiddenNoPlan: action.payload
+            }
+        case 'SET_ACTIVE_MENU':
+            return {
+                ...state,
+                activeMenu: action.payload
+            }
         case 'SET_PRIVILEGE':
             return {
                 ...state,
@@ -131,6 +143,18 @@ const IndexReducer = (state = initialState, action) => {
             resetState.version = action.payload.version;
             resetState.login = false;
             resetState.privilege = [];
+            var filters = state.filters;
+            filters.map((title, index) => {
+                if (title.disabled == false) {
+                    filters[index]['checked'] = false;
+                }
+                if (state.privilegeFilter[state.typeAccount].includes(title.name)) {
+                    filters[index]['checked'] = true;
+                } else {
+                    filters[index]['checked'] = false;
+                }
+            });
+            action.payload.filters = filters;
             return resetState;
         case 'INIT_PLAN':
             var index = 0;
@@ -166,25 +190,25 @@ const IndexReducer = (state = initialState, action) => {
                 id: ''
             }
 
-        case 'INIT_LOGOUT':
-            var filters = state.filters;
-            filters.map((title, index) => {
-                if (title.disabled == false) {
-                    filters[index]['checked'] = false;
-                }
-                if (state.privilegeFilter[state.typeAccount].includes(title.name)) {
-                    filters[index]['checked'] = true;
-                } else {
-                    filters[index]['checked'] = false;
-                }
-            })
-            action.payload.privilege = [];
-            action.payload.filters = filters;
-            return {
-                ...state,
-                menuIndex: '',
-                ...action.payload
-            }
+        // case 'INIT_LOGOUT':
+        //     var filters = state.filters;
+        //     filters.map((title, index) => {
+        //         if (title.disabled == false) {
+        //             filters[index]['checked'] = false;
+        //         }
+        //         if (state.privilegeFilter[state.typeAccount].includes(title.name)) {
+        //             filters[index]['checked'] = true;
+        //         } else {
+        //             filters[index]['checked'] = false;
+        //         }
+        //     })
+        //     action.payload.privilege = [];
+        //     action.payload.filters = filters;
+        //     return {
+        //         ...state,
+        //         menuIndex: '',
+        //         ...action.payload
+        //     }
         case 'INIT_DIV':
             return {
                 ...state,
@@ -222,7 +246,6 @@ const IndexReducer = (state = initialState, action) => {
         case 'SUPPLIER_PAGE_SET_FILTER':
             var filter = state.filter;
             filter.supplier.vender = action.payload;
-            console.log(filter)
             return {
                 ...state,
                 filter: filter
@@ -232,6 +255,8 @@ const IndexReducer = (state = initialState, action) => {
                 ...state,
                 jwt: action.payload
             }
+        // case 'RESET':
+        //     return initialState
         default:
             return state
     }

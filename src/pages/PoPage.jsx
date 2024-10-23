@@ -69,7 +69,6 @@ function PoPage() {
     useEffect(() => {
         if (!once) {
             async function getData() {
-                // dispatch({ type: 'SET_VENDER', payload: await GetVenders() });
                 const supplier = await getListSupplier();
                 const data = await GET_PO({ vender: supplier, startDate: dayjs().format('YYYYMMDD'), endDate: dayjs().add(7, 'day').format('YYYYMMDD') });
                 setData(data);
@@ -111,7 +110,6 @@ function PoPage() {
                                 <MenuItem value={4}>4 Week</MenuItem>
                             </Select>
                         </FormControl>
-                        {/* <Button variant='contained' className='min-w-[100px]' onClick={handleGetData}><SearchIcon />Search</Button> */}
                         <div className={`bg-[#4effca] text-[#080b0f] w-fit rounded-[8px] px-[8px] pt-[0px] pb-[4px] cursor-pointer transition ease-in-out delay-50  hover:-translate-y-1 hover:scale-105 hover:bg-[#4effca] hover:text-[#080b0f] duration-300 shadow-mtr w-fit`} onClick={handleGetData}>
                             <Stack alignItems={'center'} direction={'row'}>
                                 <ElectricBoltIcon className='text-[.75vw] mr-1' />

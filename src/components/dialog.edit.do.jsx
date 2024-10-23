@@ -45,7 +45,6 @@ function DialogEditDO(props) {
         data.doPrev = data?.doVal;
         data.doVal = (val != '' && val != null) ? parseInt(val) : 0;
         data.empCode = reducer.id;
-        console.log(data);
         let res = await API_EDIT_DO(data);
         if (res.status) {
             let dataOfResult = dataDO.filter((o => o.part == data.partno && o.name == 'do'));

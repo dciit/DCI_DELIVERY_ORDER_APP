@@ -17,6 +17,7 @@ function LoginPage() {
     const [LoginFalse, setLoginFalse] = useState(false);
     const [wayLogin, setWayLogin] = useState('employee');
     const reducer = useSelector(state => state.mainReducer);
+    const ver = import.meta.env.VITE_VERSION;
     function getJwt(username, password) {
         return new Promise(resolve => {
             axios.post(import.meta.env.VITE_BASE_DELIVERY_ORDER + '/jwt', { username: username, password: encodeURIComponent(password) }, {
@@ -43,6 +44,7 @@ function LoginPage() {
             url: 'https://scm.dci.co.th/BudgetCharts/BudgetRestService/api/authen?username=' + uname + '&password=' + encodeURIComponent(pwd),
             withCredentials: false,
         }).then(async (res) => {
+            console.log(res)
             if (res.data[0]['EmpCode'] != null) {
                 let privilege = await API_PRIVILEGE('DO', 'DO');
                 dispatch({ type: 'SET_PRIVILEGE', payload: privilege });
@@ -158,7 +160,7 @@ function LoginPage() {
                                     LoginFalse && <div className='flex items-center justify-center p-3 text-red-500'>ไม่สามารถเข้าสู่ระบบได้ ...</div>
                                 }
                             </div>
-                            <span className=' h-auto text-center pb-3'>2023 DCI, All right Reserved</span>
+                            <span className=' h-auto text-center pb-3'>2023 DCI, All right Reserved ({ver})</span>
                         </BoxInput>
                     ) : (
                         <div className='h-full flex justify-center items-center flex-col gap-3'>

@@ -2,7 +2,7 @@ import { Stack, Typography } from '@mui/material'
 import { React, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 function PartComponent(props) {
-    const { master, part } = props;
+    const { master, part, vdCode, vdName ,partNo} = props;
     const venderMaster = useSelector(state => state.mainReducer.venderMaster);
     const [venderName, setVenderName] = useState('');
     const [partDetail, setPartDetail] = useState({});
@@ -17,25 +17,28 @@ function PartComponent(props) {
         }
     }, []);
     return (
-        <div className='w-[200px]'>
+        <div className='w-[200px] bg-white'>
             {
                 part?.key && <Stack className='box-part-detail absolute ' alignItems={'start'} pl={2} pt={1}>
-                    <Stack direction={'row'} gap={1}>
-                        <Typography className='partVal'>{partDetail?.partno}</Typography>
+                    <Stack direction={'row'} gap={1}  >
+                        <div className="flex flex-row gap-1 ">
+                            <span className=" text-[#5c5fc8] font-bold font-['Inter']">{partNo}</span>
+                            <span className=" text-[#5c5fc8] font-semibold font-['Inter']">{partDetail?.cm}</span>
+                        </div>
                         <Typography className='unitVal'>{partDetail?.unit}</Typography>
                     </Stack>
                     <Typography className='partDesc text-[12px]'>{partDetail?.description}</Typography>
-                    <Stack direction={'row'} gap={1} className='text-[12px]'>
-                        <Typography className='text-[12px]'> PD.LT </Typography>
-                        <Typography className='boxVal text-[12px]'>{partDetail?.pdlt}</Typography>
-                        <Typography className='text-[12px]'> BOX </Typography>
-                        <Typography className='boxVal text-[12px]'>{partDetail?.boxQty}</Typography>
-                        <Typography className='text-[12px]'> MIN </Typography>
-                        <Typography className='minVal text-[12px]'>{partDetail?.boxMin}</Typography>
-                        <Typography className='text-[12px]'> MAX </Typography>
-                        <Typography className='maxVal text-[12px]'>{partDetail?.boxMax != 99999 ? partDetail?.boxMax : '-'}</Typography>
+                    <Stack direction={'row'} gap={1} className="text-[12px] font-['Inter']">
+                        <span className='text-[14px]'> PD.LT </span>
+                        <span className="boxVal text-[14px] font-semibold font-['Inter']">{partDetail?.pdlt}</span>
+                        <span className='text-[14px]'> BOX </span>
+                        <span className="boxVal text-[14px]  font-semibold font-['Inter']">{partDetail?.boxQty}</span>
+                        <span className='text-[14px]'> MIN </span>
+                        <span className='minVal text-[14px]'>{partDetail?.boxMin}</span>
+                        <span className='text-[14px]'> MAX </span>
+                        <span className='maxVal text-[14px]'>{partDetail?.boxMax != 99999 ? partDetail?.boxMax : '-'}</span>
                     </Stack>
-                    <Typography className='text-[12px] vender-name'>{venderName}</Typography>
+                    <Typography className='text-[12px] vender-name'>{vdName} </Typography>
                 </Stack>
             }
         </div>

@@ -1,9 +1,11 @@
-import { Button, Stack, Table } from "@mui/material";
+import { Stack, Table } from "@mui/material";
 import React, { useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
 import { DownloadTableExcel } from "react-export-table-to-excel";
 import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
 import moment from "moment";
+import { Button } from "antd";
+import { FileExcelOutlined} from "@ant-design/icons";
 function ExportToExcel(props) {
     const { data, vd, rn, buyer } = props;
     const tableRef = useRef(null);
@@ -29,14 +31,7 @@ function ExportToExcel(props) {
             sheet="D/O Plan"
             currentTableRef={tableRef.current}
         >
-            <div>
-                <div className={`bg-[#4effca] text-[#080b0f] w-fit rounded-[8px] px-[8px] pt-[0px] pb-[4px] cursor-pointer transition ease-in-out delay-50  hover:-translate-y-1 hover:scale-105 hover:bg-[#4effca] hover:text-[#080b0f] shadow-mtr`}>
-                    <Stack alignItems={'center'} direction={'row'}>
-                        <SimCardDownloadIcon className='md:text-[1.5vw] lg:text-[1.5vw] xl:text-[1vw] mr-1' />
-                        <span className='text-center'> Export to Excel</span>
-                    </Stack>
-                </div>
-            </div>
+            <Button icon = {<FileExcelOutlined />} type='primary'>Export</Button>
         </DownloadTableExcel>
         <table ref={tableRef} className="hidden">
             <tbody>
@@ -57,7 +52,7 @@ function ExportToExcel(props) {
                         // console.log(item)
                         var date = item.date;
                         // if (date.indexOf('/') !== -1) {
-                            date = moment(item.date).format('YYYYMMDD');
+                        date = moment(item.date).format('YYYYMMDD');
                         // }
                         return <tr key={index}>
                             <th>{item.partNo}</th>

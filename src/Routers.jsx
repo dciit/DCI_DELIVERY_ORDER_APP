@@ -14,6 +14,7 @@ import PartSupply from "./pages/PartSupply";
 import DOPage from "./pages/DOPage";
 import { persistor } from './reducers/store'
 import DeliveryManagement from "./pages/delivery.management";
+import Calendar from "./pages/calendar";
 const Routers = () => {
     const dispatch = useDispatch();
     const VITE_BASE_PATH = ''
@@ -36,6 +37,7 @@ const Routers = () => {
                     <Route path={VITE_BASE_PATH + '/delivery'} element={<DeliveryManagement />} />
                     <Route path={VITE_BASE_PATH + '/master'} element={<MasterPage />} />
                     <Route path={VITE_BASE_PATH + '/test'} element={<Test />} />
+                    <Route path={VITE_BASE_PATH + '/calendar'} element={<Calendar />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
                 <Route path='do/partsupply' element={<PartSupply />} />
