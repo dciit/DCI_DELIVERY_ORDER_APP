@@ -26,7 +26,7 @@ export function ServiceGetListSupplier(buyer = "") {
         })
     })
 }
-export function ServiceVender() {
+export function APIGetVenderMaster() {
     return new Promise((resolve) => {
         http.get('/vender').then((res) => {
             resolve(res.data);
@@ -190,7 +190,7 @@ export function API_GET_SUPPLIER_BY_BUYER(param = {}) {
 
 export function API_RUN_DO(buyerCode = "41256") {
     return new Promise((resolve) => {
-        http.get('/insertDO/' + buyerCode).then((res) => {
+        http.get('/distribute/' + buyerCode).then((res) => {
             resolve(res.data);
         });
     })
@@ -313,6 +313,13 @@ export function API_HISTORY_EDIT_DO(param) {
 export function APIAddPartMaster(param) {
     return new Promise((resolve) => {
         http.post(`AddPartMaster`, param).then((res) => {
+            resolve(res.data);
+        })
+    });
+}
+export function ChkVers(param){
+    return new Promise((resolve) => {
+        http.post(`ChkVers`,param).then((res) => {
             resolve(res.data);
         })
     });

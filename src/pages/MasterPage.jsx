@@ -2,7 +2,7 @@ import { Alert, ButtonGroup, Checkbox, CircularProgress, Divider, FormControl, F
 import React, { useEffect, useState } from 'react'
 import { selectStyle } from '../Styleds';
 import { useDispatch, useSelector } from 'react-redux';
-import { GetVenderDetail, ServiceGetPartDetail, ServiceGetSupplier, ServiceUpdateMasterPart, ServiceVender, getMaster } from '../Services';
+import { GetVenderDetail, ServiceGetPartDetail, ServiceGetSupplier, ServiceUpdateMasterPart, getMaster } from '../Services';
 import SearchIcon from '@mui/icons-material/Search';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import DialogVenderDetail from '../components/DialogVenderDetail';

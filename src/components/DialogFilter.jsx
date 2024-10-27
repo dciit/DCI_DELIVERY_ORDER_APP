@@ -11,9 +11,6 @@ function DialogFilter(props) {
         dispatch({ type: 'UPDATE_FILTER', checked: e.checked, name: name });
         refresh();
     }
-    useEffect(() => {
-        console.log(hiddenPartNoPlan)
-    },[hiddenPartNoPlan])
     return (
         <Dialog open={open} onClose={() => close(false)} fullWidth maxWidth={'sm'}>
             <DialogTitle>กรองข้อมูล</DialogTitle>

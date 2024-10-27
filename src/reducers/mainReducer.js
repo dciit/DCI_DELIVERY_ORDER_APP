@@ -70,7 +70,8 @@ const initialState = {
     privilege: [],
     dvcd: '',
     activeMenu: '',
-    hiddenNoPlan: true // ปิด/เปิด การแสดงผลรายการ Part ที่ไม่มีแผน
+    hiddenNoPlan: true ,
+    supplier:''
 }
 
 const IndexReducer = (state = initialState, action) => {
@@ -140,6 +141,7 @@ const IndexReducer = (state = initialState, action) => {
             }
         case 'RESET':
             var resetState = initialState
+            console.log(resetState)
             resetState.version = action.payload.version;
             resetState.login = false;
             resetState.privilege = [];
@@ -189,26 +191,6 @@ const IndexReducer = (state = initialState, action) => {
                 login: false,
                 id: ''
             }
-
-        // case 'INIT_LOGOUT':
-        //     var filters = state.filters;
-        //     filters.map((title, index) => {
-        //         if (title.disabled == false) {
-        //             filters[index]['checked'] = false;
-        //         }
-        //         if (state.privilegeFilter[state.typeAccount].includes(title.name)) {
-        //             filters[index]['checked'] = true;
-        //         } else {
-        //             filters[index]['checked'] = false;
-        //         }
-        //     })
-        //     action.payload.privilege = [];
-        //     action.payload.filters = filters;
-        //     return {
-        //         ...state,
-        //         menuIndex: '',
-        //         ...action.payload
-        //     }
         case 'INIT_DIV':
             return {
                 ...state,
@@ -255,8 +237,11 @@ const IndexReducer = (state = initialState, action) => {
                 ...state,
                 jwt: action.payload
             }
-        // case 'RESET':
-        //     return initialState
+        case 'SET_SUPPLIER':
+            return {
+                ...state,
+                supplier: action.payload
+            }
         default:
             return state
     }
