@@ -19,12 +19,7 @@ import DialogViewPlan from '../components/dialog.view.plan'
 import DialogHistoryDO from '../components/dialog.history.do'
 import { ToastContainer } from 'react-toastify'
 import { Button, Card, Input, Select, Space } from 'antd'
-<<<<<<< Updated upstream
 import { FilterOutlined, SearchOutlined, LockOutlined } from '@ant-design/icons'
-=======
-import { FilterOutlined, SearchOutlined } from '@ant-design/icons'
-import { Fragment } from 'react'
->>>>>>> Stashed changes
 function DOPage() {
     let prodLead = 0;
     const [planSelected, setPlanSelected] = useState({});
@@ -163,9 +158,8 @@ function DOPage() {
         await FN_INIT_DATA(initPlan.data);
         dispatch({ type: 'SET_PART_MASTER', payload: initPlan.partMaster })
         dispatch({ type: 'SET_VENDER_MASTER', payload: initPlan.venderMaster });
-        setColumns(await FN_SET_COLUMN(initPlan.venderSelected,supplierSelected));
+        setColumns(await FN_SET_COLUMN(initPlan.venderSelected, supplierSelected));
     }
-<<<<<<< Updated upstream
     useEffect(() => {
         if (supplierSelected != '') {
             dispatch({ type: 'SET_SUPPLIER', payload: supplierSelected });
@@ -173,12 +167,6 @@ function DOPage() {
     }, [supplierSelected])
 
 
-=======
-    async function initBuyer() {
-        var initBuyer = await API_GET_BUYER();
-        setBuyers(initBuyer);
-    }
->>>>>>> Stashed changes
 
     useEffect(() => {
         if (buyers.length) {
@@ -329,10 +317,10 @@ function DOPage() {
         setDOResoure(DATA_FORMAT);
         return DATA_FORMAT;
     }
-    function FN_SET_COLUMN(vdMaster,supplier) {
+    function FN_SET_COLUMN(vdMaster, supplier) {
         var column = [];
         console.log(vdMaster)
-        if(vdMaster.length == 0){
+        if (vdMaster.length == 0) {
             console.log(supplier)
         }
         prodLead = vdMaster[0].vdProdLead - 1;
@@ -397,8 +385,8 @@ function DOPage() {
                         <CloseIcon className='text-red-500' /><span className='text-red-500 text-[10px] opacity-80'>[No Delivery]</span>
                     </div>
                 </Tooltip> : (
-                    val > 0 ? <div className='px-[4px] py-[2px] flex items-center justify-center gap-1 bg-[#0fae76] text-white rounded-md drop-shadow-lg cursor-pointer select-none hover:scale-105 duration-300 transition-all' style={{border:`${IsFixDay ? '2px' : '0px'} solid red`}}>
-                        {IsFixDay && <LockOutlined  /> }
+                    val > 0 ? <div className='px-[4px] py-[2px] flex items-center justify-center gap-1 bg-[#0fae76] text-white rounded-md drop-shadow-lg cursor-pointer select-none hover:scale-105 duration-300 transition-all' style={{ border: `${IsFixDay ? '2px' : '0px'} solid red` }}>
+                        {IsFixDay && <LockOutlined />}
                         <span>{val.toLocaleString('en')}</span>
                     </div> : ''
                 )
@@ -599,11 +587,7 @@ function DOPage() {
                                         )}></Select>
                                     </>
                                 }
-<<<<<<< Updated upstream
                                 <span className='color-mtr font-bold'>Supplier</span>
-=======
-                                <span className='color-mtr font-bold'>SUPPLIER</span>
->>>>>>> Stashed changes
                                 <Select showSearch className='w-full' value={supplierSelected} onChange={(e) => setSupplierSelected(e)} options={suppliers.map((item) => { return { label: item.vdname, value: item.vdcode } })} optionRender={(option) => (
                                     <Space >
                                         <span role="img" >{`${option.label} (${option.key})`}</span>
@@ -612,20 +596,12 @@ function DOPage() {
                                 <Button type='primary' onClick={() => initContent(supplierSelected)} icon={<SearchOutlined />}>ค้นหา</Button>
                             </Grid>
                         </Grid>
-<<<<<<< Updated upstream
 
                         <div className='bg-white text-[#ffffffc7] pl-3 py-2 font-thin flex   line-b'>
                             <div className='flex items-center gap-2 w-[40%] md:w-[50%] lg:w-[40%]'>
                                 <DiamondIcon className='text-[#5c5fc8] ' />
                                 <span className='text-[#5b5b5b]'>&nbsp;D/O Distribute : </span>
                                 <span className='text-[#5c5fc8] font-semibold tracking-wider'>{RunningCode != '' ? RunningCode : '-'}</span>
-=======
-                        <div className='bg-white text-[#ffffffc7] pl-3 py-2 font-thin flex   line-b'>
-                            <div className='flex items-center gap-2 w-[40%] md:w-[50%] lg:w-[40%]'>
-                                <DiamondIcon className='text-[#5c5fc8] ' />
-                                <span className='text-[#5b5b5b]'>&nbsp;D/O RUNNING : </span>
-                                <span className='text-[#5c5fc8] font-semibold'>{RunningCode != '' ? RunningCode : '-'}</span>
->>>>>>> Stashed changes
                             </div>
                             <div className='w-[40%]  md:w-[25%] lg:w-[40%]'>
                                 {
@@ -678,14 +654,9 @@ function DOPage() {
                                             totalCount={DOResult?.length}
                                             data={DOResult}
                                             fixedHeaderContent={() => {
-<<<<<<< Updated upstream
                                                 let rnd = Math.floor(Math.random() * 1000000000);
                                                 return <>
                                                     <tr key={rnd}>
-=======
-                                                return <Fragment>
-                                                    <tr >
->>>>>>> Stashed changes
                                                         <td rowSpan={4} className='stuck w-[400px]'>
                                                             <div className='flex justify-around'>
                                                                 <span>DRAWING NO.</span>
@@ -699,16 +670,11 @@ function DOPage() {
                                                                 if (ymdLoop == ymdNow) {
                                                                     column.width = '140px';
                                                                 }
-<<<<<<< Updated upstream
                                                                 var oVdMstr = vdMstr.filter(o => o.vdCode == supplierSelected);
                                                                 prodLead = 0;
                                                                 if (oVdMstr.length > 0) {
                                                                     prodLead = oVdMstr[0].vdProdLead - 1;
                                                                 }
-=======
-                                                                console.log(VdMasters)
-                                                                prodLead = (VdMasters.length > 0 ? VdMasters[0].vdProdLead : 7) - 1;
->>>>>>> Stashed changes
                                                                 fixDate = moment().add(prodLead, 'days');
                                                                 runDate = moment(fixDate.add(1, 'days')).add(7, 'days');
                                                                 let ThisDay = moment();
@@ -777,7 +743,7 @@ function DOPage() {
                                                             })
                                                         }
                                                     </tr>
-                                                </Fragment>
+                                                </>
                                             }}
                                             itemContent={(index, item) => {
                                                 let title = '';
