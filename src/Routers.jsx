@@ -38,8 +38,10 @@ const Routers = () => {
                     <Route path={VITE_BASE_PATH + '/master'} element={<MasterPage />} />
                     <Route path={VITE_BASE_PATH + '/test'} element={<Test />} />
                     <Route path={VITE_BASE_PATH + '/calendar'} element={<Calendar />} />
+
                 </Route>
                 <Route path="*" element={<NotFound />} />
+                {/* <Route path = "warning" element={<Warning />} /> */}
                 <Route path='do/partsupply' element={<PartSupply />} />
             </Routes>
         </BrowserRouter>

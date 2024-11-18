@@ -12,6 +12,7 @@ import ExportToExcel from '../components/ExportToExcel'
 import PartComponent from '../components/PartComponent'
 import CloseIcon from '@mui/icons-material/Close';
 import { NumericFormat } from 'react-number-format'
+import DialogDOWarningPage from '../components/dialog.warning.do'
 import DialogFilter from '../components/DialogFilter'
 import DialogEditDO from '../components/dialog.edit.do'
 import CHECK_PRIVILEGE from '../Method'
@@ -20,6 +21,8 @@ import DialogHistoryDO from '../components/dialog.history.do'
 import { ToastContainer } from 'react-toastify'
 import { Button, Card, Input, Select, Space } from 'antd'
 import { FilterOutlined, SearchOutlined, LockOutlined } from '@ant-design/icons'
+import { ContentPasteSearch } from '@mui/icons-material'
+import { Popover } from"antd";
 function DOPage() {
     let prodLead = 0;
     const [planSelected, setPlanSelected] = useState({});
@@ -32,6 +35,7 @@ function DOPage() {
     const [showBtnRunDo, setShowBtnRunDo] = useState(true);
     const [openFilter, setOpenFilter] = useState(false);
     const [openEditDOVal, setOpenEditDOVal] = useState(false);
+    const [openWarning, setOpenWarning] = useState(false);
     const [dataEditDO, setDataEditDO] = useState({});
     const reducer = useSelector(state => state.mainReducer);
     let VdMasters = reducer.venderMaster;
@@ -67,10 +71,12 @@ function DOPage() {
     const [vdMstr, setVdMstr] = useState([]);
     const hiddenPartNoPlan = redux?.hiddenPartNoPlan != undefined ? redux.hiddenPartNoPlan : true;
     const dayCurrent = moment().subtract(8, 'hours')
+    const [fixDateAPI,setfixDateAPI] = useState([])
     useEffect(() => {
         if (!once) {
             init();
             setOnce(true);
+            setOpenWarning(true)
         }
     }, [once]);
     async function init() {
@@ -84,7 +90,6 @@ function DOPage() {
     useEffect(() => {
         if (vdMstr.length > 0) {
             initBuyer();
-            console.log('sad')
         }
     }, [vdMstr])
 
@@ -142,7 +147,7 @@ function DOPage() {
     // }
 
     async function initContent() {
-        setSearch('')
+        // setSearch('')
         setLoading(true);
         let reduxSupplier = typeof reducer.supplier != 'undefined' ? reducer.supplier : '';
         if (reduxSupplier == '') {
@@ -153,7 +158,14 @@ function DOPage() {
         const initPlan = await API_GET_DO(buyerSelected, vdCode, startDate, endDate, hiddenPartNoPlan)
         setLoading(false);
         setRunningCode(initPlan.nbr);
-        setData(initPlan.data);
+         if(search.trim().length > 0){
+            setData(initPlan.data.filter(item => item.part.toLowerCase().includes(search.toLowerCase())))
+            setfixDateAPI(initPlan.fixDateYMD)
+         }else{
+            setData(initPlan.data);
+            setfixDateAPI(initPlan.fixDateYMD)
+          
+         }
         setVenderDelivery(initPlan.venderDelivery);
         await FN_INIT_DATA(initPlan.data);
         dispatch({ type: 'SET_PART_MASTER', payload: initPlan.partMaster })
@@ -211,7 +223,7 @@ function DOPage() {
             let filterData = data.filter(o => o.partNo == part);
             let length = filterData.length;
             filterData.forEach((item, iData) => {
-                PLAN.push({ date: item.date, value: item.plan, prev: item.planPrev });
+                PLAN.push({ date: item.date, value: item.plan, prev: item.planPrev ,changePlan:item.changePlan, historyDevPlanQTY : item.historyDevPlanQTY });
                 PICKLIST.push({ date: item.date, value: item.pickList });
                 DO.push({ date: item.date, value: item.do });
                 STOCK.push({ date: item.date, value: item.stock });
@@ -318,11 +330,7 @@ function DOPage() {
         return DATA_FORMAT;
     }
     function FN_SET_COLUMN(vdMaster, supplier) {
-        var column = [];
-        console.log(vdMaster)
-        if (vdMaster.length == 0) {
-            console.log(supplier)
-        }
+        var column = []; 
         prodLead = vdMaster[0].vdProdLead - 1;
         endDate = moment().add((prodLead + 7), 'days').format('YYYY-MM-DD');
         var sDate = moment(startDate);
@@ -352,6 +360,7 @@ function DOPage() {
         prodLead = VdMasters[0].vdProdLead - 1;
         fixDate = moment().add(prodLead, 'days');
         runDate = moment(fixDate.add(1, 'days')).add(7, 'days')
+
         let val = item.value;
         let date = moment(item.date);
         let vender = row.vender;
@@ -364,6 +373,12 @@ function DOPage() {
         let IsRun = (date.format('YYYY-MM-DD') >= fixDate.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < runDate.format('YYYY-MM-DD')) ? true : false;
         var dtLoop = moment(item.date);
         var dtNow = moment().subtract(8, 'hours');
+        
+        // console.log('this date : ' + ThisDay.format('YYYY-MM-DD'));
+        // console.log('fix date : ' + fixDate.format('YYYY-MM-DD'));
+        // console.log('run date : ' + fixDate.format('YYYY-MM-DD'));
+
+
         let isGradient = false;
         let isDayAfterAfternoon = true;  // หลังบ่าย 3 ของวันสุด้ทายในช่วง FIX
         if (moment(dateLoop).add(1, 'days').format('YYYYMMDD') == fixDate.format('YYYYMMDD')) {
@@ -415,7 +430,14 @@ function DOPage() {
         }
     }, [openDialogHistory])
 
+    const content = (n16,historyDev) =>(
+        <div>
+          <p>แผนปัจจุบัน (N16) : {n16}</p>
+          <p>แผนใหม่ (Distribute) : {historyDev}</p>
+        </div>
+      );
     function VIEW_PLAN(row, item) {
+        let historyPlanDevQTY = item.historyDevPlanQTY
         let part = row.part;
         let val = item.value;
         let prev = typeof item.prev != 'undefined' ? item.prev : val;
@@ -437,11 +459,33 @@ function DOPage() {
             }
         }
         var res = <td className={`w-[150px] text-white ${IsHoliday && 'isHoliday'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' ' : ''}`}>
-            {
-                val > 0 ? (val != prev ? <Badge color={`${val > prev ? 'success' : 'error'}`} className={`buget-do cursor-pointer ${row.classs}`} badgeContent={`${val > prev ? '+' : '-'}${val > prev ? (val - prev) : (prev - val)}`} max={9999}>
-                    {val}
-                </Badge> : <NumericFormat className={`font-['Inter'] font-semibold drop-shadow-md cursor-pointer ${row.classs}`} displayType='text' allowLeadingZeros thousandSeparator="," value={!PlanIsDiff ? val : 999} decimalScale={2} onClick={() => handleShowPlan(dtLoop.format('YYYYMMDD'), part)} />) : (val == 0 ? '' : <span className='text-red-500 font-semibold'>{val}</span>)
+           
+             {item.changePlan &&
+            //     <Stack direction={'row'} className='text-[12px] cursor-pointer text-center rounded-md bg-blue-500 px-1 py-1  font-semibold tracking-wider' justifyContent={'center'} >
+            //     <span>{val - historyPlanDevQTY < 0 ? '+' : '-' }&nbsp;</span>
+            //     <span>{val - historyPlanDevQTY}</span>
+            //  </Stack>
+
+                <Popover content={content(val, historyPlanDevQTY)}>
+                    <Button  type="primary">change</Button>
+                </Popover> 
+  
+                 
+          
+                 
+            } 
+
+            {   
+                val > 0 ? (val != prev ? 
+               
+                '': 
+                <NumericFormat className={`font-['Inter'] font-semibold drop-shadow-md cursor-pointer ${row.classs}`} displayType='text' 
+                allowLeadingZeros thousandSeparator="," value={!PlanIsDiff ? val : 999} 
+                decimalScale={2} onClick={() => handleShowPlan(dtLoop.format('YYYYMMDD'), part)} />) 
+                : (val == 0 ? <span className={` ${item.changePlan && 'text-blue-500 font-semibold'}`}>0</span> : <span className='text-red-500 font-semibold'>{val}</span>)
             }
+            
+            
         </td>;
         return res;
     }
@@ -468,10 +512,11 @@ function DOPage() {
             if (moment().format('YYYYMMDD HH:mm:ss') < moment().format('YYYYMMDD 22:00:00')) {
                 isGradient = true;
             }
-        }
+        }  
         let ymdNow = moment().format('YYYYMMDD');
         let nStockPervDay = 0;
         if (ymdLoop == ymdNow) {
+           
             let dataGetStock8AM = data.filter(o => moment(o.date).format('YYYYMMDD') == ymdNow && o.partNo == part);
             if (Object.keys(dataGetStock8AM).length) {
                 nStockPervDay = (val + dataGetStock8AM[0].plan) - dataGetStock8AM[0].do;
@@ -482,7 +527,7 @@ function DOPage() {
                 (date.format('YYYYMMDD') == ThisDay.format('YYYYMMDD') && type == 'stock') ? <Stack px={1}>
                     <span className={`${val < 0 ? 'text-red-500' : row.classs} font-bold `}> {val.toLocaleString('en')}</span>
                     <Stack direction={'row'} className='text-[12px] cursor-pointer text-center rounded-md bg-orange-600 px-1 py-1  font-semibold tracking-wider' justifyContent={'center'} >
-                        <span>STOCK :&nbsp;</span>
+                        <span>STOCK  :&nbsp;</span>
                         <span>{nStockPervDay.toLocaleString('en')}</span>
                     </Stack>
                 </Stack> : (
@@ -614,7 +659,6 @@ function DOPage() {
                                         <span className='text-red-500 font-semibold'>ระบบจะคำนวณยอด D/O ใหม่ เวลา 08:00 น. ของทุกวัน</span>
                                     </div>
                                 }
-
                             </div>
                             <div className='w-[40%]  md:w-[25%] flex justify-end items-center gap-1'>
                                 <Button onClick={() => setOpenFilter(true)} icon={<FilterOutlined />}>กรอกข้อมูล</Button>
@@ -639,7 +683,7 @@ function DOPage() {
                             </div>
                             <div className='flex justify-end items-center pb-3 pt-1 gap-2'>
                                 <small>ค้นหา : </small>
-                                <Input placeholder='ค้นหาด้วย Part Name' className='w-fit' onChange={(e) => setSearch(e.target.value)} value={search} />
+                                <Input placeholder='ค้นหาด้วย Part Name' className='w-fit' onChange={(e) => setSearch(e.target.value)} value={search} allowClear = {true} />
                             </div>
                         </div>
                         <div className='flex w-full h-[95%] flex-col box-content border shadow-md'>
@@ -680,11 +724,13 @@ function DOPage() {
                                                                 let ThisDay = moment();
                                                                 let LoopDay = moment(column.date);
                                                                 let IsHoliday = ['SAT', 'SUN'].includes(moment(column.date).format('ddd').toUpperCase());
-                                                                let IsFixDay = (LoopDay.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && LoopDay.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
+                                                                
+                                                                // let IsFixDay = (LoopDay.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && LoopDay.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
                                                                 let IsRun = (LoopDay.format('YYYY-MM-DD') >= fixDate.format('YYYY-MM-DD') && LoopDay.format('YYYY-MM-DD') < runDate.format('YYYY-MM-DD')) ? true : false;
                                                                 var _ThStartMonth = "";
                                                                 var dtLoop = moment(column.date);
                                                                 var dtNow = moment()
+                                                                let IsFixDay =  fixDateAPI.includes(LoopDay.format('YYYY-MM-DD')) ? true : false;
                                                                 if (moment(column.date).format('DD') == "01") {
                                                                     _ThStartMonth = <TableCell rowSpan={2} className='text-center w-[200px] start-[200px] text-[1.5rem] stuck text-white thMonth' style={{ width: column.width, padding: 0, height: column.height, borderLeft: '1px solid #e0e0e0', borderRight: '1px solid #e0e0e0 !important' }}>{moment(column.date).format('MMM').toUpperCase()}</TableCell>
                                                                 }
@@ -695,9 +741,10 @@ function DOPage() {
                                                                     }
                                                                 }
                                                                 return <>
+                                                                {/* ${IsHoliday && 'isHoliday'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' bg-red-500 text-white' : ''} */}
                                                                     {_ThStartMonth}
                                                                     <TableCell
-                                                                        className={`${IsHoliday && 'isHoliday'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' bg-red-500 text-white' : ''}`}
+                                                                        className={`text-white ${IsFixDay && 'bg-red-500'} ${IsHoliday && 'isHoliday'}`}
                                                                         key={i}
                                                                         align={column.numeric || false ? 'center' : 'center'}
                                                                         style={{ width: column.width, padding: 0, height: column.height, maxWidth: '140px' }}
@@ -764,6 +811,7 @@ function DOPage() {
                                                     title = <span className={`title ${item.name}`}>PO BALANCE</span>;
                                                 }
                                                 if (item.data.length) {
+                                               
                                                     return < Fragment key={`${item.classs}-${index} `}>
                                                         <td className={`${item.name == 'line' && 'td-line'} stuck ${item.key ? 'z-50' : ''}`}>
                                                             <Stack direction={'row'} className='w-[400px]'>
@@ -773,9 +821,9 @@ function DOPage() {
                                                                 </div>
                                                             </Stack>
                                                         </td>
-
                                                         {
                                                             item.name != 'line' ? item.data.map((o, index) => {
+                                                             
                                                                 let view = '';
                                                                 if (item.name == 'plan') {
                                                                     view = VIEW_PLAN(item, o, index)
@@ -808,6 +856,7 @@ function DOPage() {
                             </div >
                         </div>
                         {/* <DialogRunDO handle={() => confirmApprDo(true)} open={openApprDo} close={setOpenApprDo} loading={loadingRunDO} setLoading={setLoadingRunDO} /> */}
+                        <DialogDOWarningPage open={openWarning} close={setOpenWarning} />
                         <DialogFilter open={openFilter} close={setOpenFilter} refresh={FN_INIT_DATA} />
                         <DialogEditDO open={openEditDOVal} close={setOpenEditDOVal} data={dataEditDO} dataDO={DOResult} setDataDO={setDOResult} />
                         <DialogViewPlan open={openViewPlan} close={setOpenViewPlan} data={planSelected} setPlan={setPlanSelected} />
@@ -817,7 +866,7 @@ function DOPage() {
                             </Alert>
                         </Snackbar>
 
-                        <DialogHistoryDO open={openDialogHistory} close={setOpenDialogHistory} param={paramDialogHistory} runningCode={RunningCode} data={DOResult} setData={setDOResult} />
+                        <DialogHistoryDO open={openDialogHistory} close={setOpenDialogHistory} param={paramDialogHistory} runningCode={RunningCode} data={DOResult} setData={setDOResult} loadDO = {initContent}/>
                         <ToastContainer autoClose={2000} />
                     </div>
                 </div > : <LoginPage />

@@ -324,3 +324,13 @@ export function ChkVers(param){
         })
     });
 }
+
+
+
+export function API_WARINING_DO() {
+    return new Promise((resolve) => {
+        http.get('/DOWarining').then((res) => {
+            resolve(res.data);
+        });
+    })
+}
