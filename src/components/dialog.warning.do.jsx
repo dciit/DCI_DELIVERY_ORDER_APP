@@ -35,6 +35,8 @@ function DialogDOWarningPage(props) {
   
   const { open, close } = props;
   const [data, setData] = useState([]);
+    const [dateNow,setdateNow] = useState("");
+  
 //   const [page, setPage] = useState(0);
 //   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
@@ -56,6 +58,7 @@ function DialogDOWarningPage(props) {
     setLoading(true);
     const initPlan = await API_WARINING_DO();
     setData(initPlan);
+    setdateNow(initPlan[0].dateRound)
     setLoading(false);
   }
 
@@ -92,7 +95,7 @@ function DialogDOWarningPage(props) {
       {
         accessorKey: 'stock', 
         header: 'STOCK',
-        Cell: ({ cell }) => <span>{cell.getValue().toLocaleString("en-Us")}</span>,
+        Cell: ({ cell }) => <span className="text-red-500">{cell.getValue().toLocaleString("en-Us")}</span>,
         size:100,
       },
     ],
@@ -116,9 +119,19 @@ function DialogDOWarningPage(props) {
 
                  {loading ? <div className='flex flex-col justify-center items-center h-full loading'><CircularProgress style={{ color: '#5c5fc8' }} /><span className=' mt-3'>กำลังโหลดข้อมูล . . .</span></div>
                  : <>
-
+                   <div className="flex flex-col  gap-6">
+                         
+                       
+                         <div>  <span className="text-[#5b5b5b]">Update :</span>
+                         <span className="font-bold p-2 text-[#5c5fc8]">{Object.keys(data).length > 0 && moment(dateNow).format("DD/MM/YYYY HH:mm")}</span>
+                         &nbsp;&nbsp;&nbsp;
+                         <span className="font-bold p-2 text-green-800 bg-green-100 ring-1 ring-green-500 rounded-lg">ข้อมูล Stock Part Shortage อัพเดททุก 30 นาที</span></div>
+                       
+                         
+                  <div>
                 <MaterialReactTable table={table} />
-
+                </div>
+                </div>
                  {/* <Paper sx={{ width: "100%", overflow: "auto" }}>
                      <TableContainer>
                 <Table className="tbMain">

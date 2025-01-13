@@ -15,6 +15,7 @@ import BentoOutlinedIcon from '@mui/icons-material/BentoOutlined';
 import BentoIcon from '@mui/icons-material/Bento';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
 export const menuNavbar = [
     {
         path: '/do', text: 'Delivery', value: 'd/o', priv: ['employee', 'supplier'], icon: < DesktopWindows />, noicon: <DesktopWindowsOutlinedIcon />
@@ -33,6 +34,9 @@ export const menuNavbar = [
         path: '/calendar', text: 'Calendar', value: 'calendar', priv: ['employee'], icon: <CalendarMonthOutlinedIcon />, noicon: <CalendarMonthOutlinedIcon />
     }, {
         path: '/delivery', text: 'Delivery', value: 'delivery', priv: ['supplier'], icon: null, noicon: null
+    },
+    {
+        path: '/warning', text: 'Warning', value: 'warning', priv: ['employee'], icon: <ReportProblemOutlinedIcon />, noicon: <ReportProblemOutlinedIcon />
     }
 ]
 function NavBarComponent() {
@@ -51,9 +55,11 @@ function NavBarComponent() {
     useEffect(() => {
         try {
             if (!once) {
+               
                 let menuNav = menuNavbar.filter(x => x.priv.includes(typeAccount));
                 let menuActive = redx.activeMenu != '' ? redx.activeMenu : (typeAccount == 'employee' ? 'd/o' : 'supplier');
-                // console.log(menuNav)
+        
+
                 if (menuActive != '' && menuNavbar.filter(x => x.value == menuActive).length > 0) {
                     let oMenuDef = menuNav.filter(x => x.value == menuActive);
                     if (oMenuDef.length > 0) {
@@ -79,7 +85,9 @@ function NavBarComponent() {
                 setMenuActive(menuActive);
                 once = true;
             } else {
+              
                 navigate(import.meta.env.VITE_PATH + menu[redx.menuIndex].path)
+             
             }
         } catch (e) {
             alert(`เกิดข้อผิดพลาดระหว่างการใช้งาน ติดต่อ เบีย IT 250 Error : ${e.message}`);
@@ -92,6 +100,8 @@ function NavBarComponent() {
     return (
         <div className=' flex items-center flex-col md:w-[10%] lg:w-[8%] xl:w-[5%] 2xl:w-[75px] md:text-[1vw] lg:text-[1vw] xl:text-[.75vw] bg-[#ebebeb] gap-[16px] pt-[16px] pl-[8px] pr-[8px] select-none cursor-pointer transition-all duration-300  border-r border-[#ddd]'>
             {
+                    
+
                 menuNavbar.filter(x => x.priv.includes(typeAccount)).map((item, key) => {
                     return <div key={key} className={` ${menuActive == item.value ? 'text-[#5c5fc8]' : 'text-[#8b8b8b]'} w-full rounded-[8px] `} onClick={() => handleActiveMenu(item.value, item.path)}>
                         <Stack alignItems={'center'}>

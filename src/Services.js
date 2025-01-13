@@ -317,6 +317,15 @@ export function APIAddPartMaster(param) {
         })
     });
 }
+
+
+export function APIAddPartMasterAll(param) {
+    return new Promise((resolve) => {
+        http.post(`AddPartMasterAll`, param).then((res) => {
+            resolve(res.data);
+        })
+    });
+}
 export function ChkVers(param){
     return new Promise((resolve) => {
         http.post(`ChkVers`,param).then((res) => {
@@ -330,6 +339,17 @@ export function ChkVers(param){
 export function API_WARINING_DO() {
     return new Promise((resolve) => {
         http.get('/DOWarining').then((res) => {
+            resolve(res.data);
+        });
+    })
+}
+
+
+
+
+export function API_LOAD_DATA(vdCode,empcode) {
+    return new Promise((resolve) => {
+        http.get(`/getPartMstrPU/${vdCode}/${empcode}`).then((res) => {
             resolve(res.data);
         });
     })

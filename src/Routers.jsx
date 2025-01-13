@@ -15,6 +15,7 @@ import DOPage from "./pages/DOPage";
 import { persistor } from './reducers/store'
 import DeliveryManagement from "./pages/delivery.management";
 import Calendar from "./pages/calendar";
+import DoWarning from "./pages/do.warning";
 const Routers = () => {
     const dispatch = useDispatch();
     const VITE_BASE_PATH = ''
@@ -38,10 +39,11 @@ const Routers = () => {
                     <Route path={VITE_BASE_PATH + '/master'} element={<MasterPage />} />
                     <Route path={VITE_BASE_PATH + '/test'} element={<Test />} />
                     <Route path={VITE_BASE_PATH + '/calendar'} element={<Calendar />} />
+                    <Route path={VITE_BASE_PATH + '/warning'} element={<DoWarning />} />
+
 
                 </Route>
                 <Route path="*" element={<NotFound />} />
-                {/* <Route path = "warning" element={<Warning />} /> */}
                 <Route path='do/partsupply' element={<PartSupply />} />
             </Routes>
         </BrowserRouter>

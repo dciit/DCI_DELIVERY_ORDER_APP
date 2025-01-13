@@ -12,7 +12,6 @@ import ExportToExcel from '../components/ExportToExcel'
 import PartComponent from '../components/PartComponent'
 import CloseIcon from '@mui/icons-material/Close';
 import { NumericFormat } from 'react-number-format'
-import DialogDOWarningPage from '../components/dialog.warning.do'
 import DialogFilter from '../components/DialogFilter'
 import DialogEditDO from '../components/dialog.edit.do'
 import CHECK_PRIVILEGE from '../Method'
@@ -23,8 +22,11 @@ import { Button, Card, Input, Select, Space } from 'antd'
 import { FilterOutlined, SearchOutlined, LockOutlined } from '@ant-design/icons'
 import { ContentPasteSearch } from '@mui/icons-material'
 import { Popover } from"antd";
+import DialogDOWarningPage from '../components/dialog.warning.do'
+import ColumnGroup from 'antd/es/table/ColumnGroup'
 function DOPage() {
     let prodLead = 0;
+
     const [planSelected, setPlanSelected] = useState({});
     const [openViewPlan, setOpenViewPlan] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -35,7 +37,6 @@ function DOPage() {
     const [showBtnRunDo, setShowBtnRunDo] = useState(true);
     const [openFilter, setOpenFilter] = useState(false);
     const [openEditDOVal, setOpenEditDOVal] = useState(false);
-    const [openWarning, setOpenWarning] = useState(false);
     const [dataEditDO, setDataEditDO] = useState({});
     const reducer = useSelector(state => state.mainReducer);
     let VdMasters = reducer.venderMaster;
@@ -65,6 +66,7 @@ function DOPage() {
     // const [venderSelected, setVenderSelected] = useState([]);
     const reduxPrivilege = useSelector(state => state.mainReducer.privilege);
     const redux = useSelector(state => state.mainReducer);
+    const warningStockPayload = useSelector(state => state.warningStockStateReducer.warningStockState);
     const [paramDialogHistory, setParamDialogHistory] = useState({});
     const [openDialogHistory, setOpenDialogHistory] = useState(false);
     const [search, setSearch] = useState('');
@@ -72,11 +74,12 @@ function DOPage() {
     const hiddenPartNoPlan = redux?.hiddenPartNoPlan != undefined ? redux.hiddenPartNoPlan : true;
     const dayCurrent = moment().subtract(8, 'hours')
     const [fixDateAPI,setfixDateAPI] = useState([])
+    const [LastFixDateAPI,setLastFixDateAPI] = useState("")
+    const [openWarning,setOpenWarning] = useState(warningStockPayload.isShowModal)
     useEffect(() => {
         if (!once) {
             init();
             setOnce(true);
-            setOpenWarning(true)
         }
     }, [once]);
     async function init() {
@@ -112,6 +115,13 @@ function DOPage() {
             }
             let elTb = document.getElementById('tbNew');
             elTb.scrollLeft = boxWidth > 0 ? (boxWidth / 2) : boxWidth;
+          
+            setTimeout(() => {
+                
+                setSearch(warningStockPayload.partNo)
+                dispatch({ type: 'ADJ_WARNING_STOCK_RESET'});
+
+            }, 1500);
         }
     }, [loading])
     useEffect(() => {
@@ -150,27 +160,42 @@ function DOPage() {
         // setSearch('')
         setLoading(true);
         let reduxSupplier = typeof reducer.supplier != 'undefined' ? reducer.supplier : '';
-        if (reduxSupplier == '') {
+        
+        if (reduxSupplier == '' &&  warningStockPayload.isRoute != true) {
             reduxSupplier = vdMstr[0]?.vdCode;
             dispatch({ type: 'SET_SUPPLIER', payload: reduxSupplier });
         }
         let vdCode = reducer.typeAccount == 'supplier' ? reducer.id : reduxSupplier;
+
+         vdCode = warningStockPayload.isRoute == true ? warningStockPayload.vdcode : vdCode;
+         await setSupplierSelected(vdCode)
+
         const initPlan = await API_GET_DO(buyerSelected, vdCode, startDate, endDate, hiddenPartNoPlan)
         setLoading(false);
         setRunningCode(initPlan.nbr);
+
          if(search.trim().length > 0){
-            setData(initPlan.data.filter(item => item.part.toLowerCase().includes(search.toLowerCase())))
-            setfixDateAPI(initPlan.fixDateYMD)
+
+            await setData(initPlan.data.filter(item => item.part.toLowerCase().includes(search.toLowerCase())))
+            await setfixDateAPI(initPlan.fixDateYMD)
+            await setLastFixDateAPI(initPlan.fixDateYMD[initPlan.fixDateYMD.length-1])
+
          }else{
-            setData(initPlan.data);
-            setfixDateAPI(initPlan.fixDateYMD)
+            await setData(initPlan.data);
+            await setfixDateAPI(initPlan.fixDateYMD)
+            await setLastFixDateAPI(initPlan.fixDateYMD[initPlan.fixDateYMD.length-1])
+            dispatch({ type: 'SET_FIX_DATE', payload: initPlan.fixDateYMD });
           
          }
-        setVenderDelivery(initPlan.venderDelivery);
+
+        await setVenderDelivery(initPlan.venderDelivery);
         await FN_INIT_DATA(initPlan.data);
         dispatch({ type: 'SET_PART_MASTER', payload: initPlan.partMaster })
         dispatch({ type: 'SET_VENDER_MASTER', payload: initPlan.venderMaster });
-        setColumns(await FN_SET_COLUMN(initPlan.venderSelected, supplierSelected));
+        await setColumns(await FN_SET_COLUMN(initPlan.venderSelected, supplierSelected));
+
+
+
     }
     useEffect(() => {
         if (supplierSelected != '') {
@@ -354,13 +379,13 @@ function DOPage() {
             type: 'day',
             numeric: false
         });
+        console.log(column)
         return column;
     }
     function VIEW_DO(row, item, dateLoop) {
         prodLead = VdMasters[0].vdProdLead - 1;
         fixDate = moment().add(prodLead, 'days');
         runDate = moment(fixDate.add(1, 'days')).add(7, 'days')
-
         let val = item.value;
         let date = moment(item.date);
         let vender = row.vender;
@@ -369,11 +394,11 @@ function DOPage() {
         let IsHolidayOfVender = (vdDelivery != null && typeof vdDelivery[shortDay] != 'undefined') ? vdDelivery[shortDay] : false;
         let IsHoliday = ['SAT', 'SUN'].includes(shortDay);
         let ThisDay = moment();
-        let IsFixDay = (date.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
+        //let IsFixDay = (date.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
         let IsRun = (date.format('YYYY-MM-DD') >= fixDate.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < runDate.format('YYYY-MM-DD')) ? true : false;
         var dtLoop = moment(item.date);
         var dtNow = moment().subtract(8, 'hours');
-        
+        let IsFixDay =  fixDateAPI.includes(dtLoop.format('YYYY-MM-DD')) ? true : false;
         // console.log('this date : ' + ThisDay.format('YYYY-MM-DD'));
         // console.log('fix date : ' + fixDate.format('YYYY-MM-DD'));
         // console.log('run date : ' + fixDate.format('YYYY-MM-DD'));
@@ -392,17 +417,23 @@ function DOPage() {
             }
         }
         let part = row.part;
-        let CanEdit = (IsFixDay == true && IsHolidayOfVender == true && typeAccout == 'employee');
+        // let CanEdit = (IsFixDay == true && IsHolidayOfVender == true && typeAccout == 'employee');
+        let CanEdit = ((((moment(dtLoop).format('YYYY-MM-DD')) >= (moment(dayCurrent).format('YYYY-MM-DD'))) && ((moment(dtLoop).format('YYYY-MM-DD')) <= (moment(LastFixDateAPI).format('YYYY-MM-DD'))) ) && IsHolidayOfVender == true && typeAccout == 'employee');
         var res = <td className={`px-1 w-[150px]  transition-all duration-300 hover:cursor-pointer text-white ${IsHoliday && 'isHoliday'} ${IsHolidayOfVender && 'IsHolidayOfVender'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' ' : ''}`} onClick={() => CanEdit == true ? handleHistory(part, date.format('YYYYMMDD'), val, prodLead) : false}>
-            {
+            {   
+         
                 IsHolidayOfVender == false ? <Tooltip title='Supplier ไม่ได้ระบุให้ส่งวันนี้'>
                     <div className='flex flex-col items-center justify-center'>
                         <CloseIcon className='text-red-500' /><span className='text-red-500 text-[10px] opacity-80'>[No Delivery]</span>
                     </div>
                 </Tooltip> : (
-                    val > 0 ? <div className='px-[4px] py-[2px] flex items-center justify-center gap-1 bg-[#0fae76] text-white rounded-md drop-shadow-lg cursor-pointer select-none hover:scale-105 duration-300 transition-all' style={{ border: `${IsFixDay ? '2px' : '0px'} solid red` }}>
-                        {IsFixDay && <LockOutlined />}
-                        <span>{val.toLocaleString('en')}</span>
+                    val > 0 ? <div className='px-[4px] py-[2px] flex items-center justify-center gap-1 bg-[#0fae76] text-white rounded-md drop-shadow-lg cursor-pointer select-none hover:scale-105 duration-300 transition-all' style={{ border: `${(((moment(dtLoop).format('YYYY-MM-DD')) >= (moment(dayCurrent).format('YYYY-MM-DD'))) && ((moment(dtLoop).format('YYYY-MM-DD')) <= (moment(LastFixDateAPI).format('YYYY-MM-DD'))) ) ? '2px' : '0px'} solid red` }}>
+                       {/* val > 0 ? <div className='px-[4px] py-[2px] flex items-center justify-center gap-1 bg-[#0fae76] text-white rounded-md drop-shadow-lg cursor-pointer select-none hover:scale-105 duration-300 transition-all' style={{ border: `${(IsFixDay) ? '2px' : '0px'} solid red` }}> */}
+
+                        {/* {(IsFixDay) && <LockOutlined />} */}
+                        { (((moment(dtLoop).format('YYYY-MM-DD')) >= (moment(dayCurrent).format('YYYY-MM-DD'))) && ((moment(dtLoop).format('YYYY-MM-DD')) <= (moment(LastFixDateAPI).format('YYYY-MM-DD'))) ) && <LockOutlined />}
+
+                        <span>{val.toLocaleString('en')}  </span>
                     </div> : ''
                 )
 
@@ -432,8 +463,9 @@ function DOPage() {
 
     const content = (n16,historyDev) =>(
         <div>
-          <p>แผนปัจจุบัน (N16) : {n16}</p>
-          <p>แผนใหม่ (Distribute) : {historyDev}</p>
+          <p>แผน Distribute : {historyDev.toLocaleString('en-US')}</p>
+          <p>แผนปัจจุบัน (N16) : {n16.toLocaleString('en-US')}</p>
+      
         </div>
       );
     function VIEW_PLAN(row, item) {
@@ -448,16 +480,20 @@ function DOPage() {
         let date = moment(item.date);
         let ThisDay = moment();
         let IsHoliday = ['SAT', 'SUN'].includes(date.format('ddd').toUpperCase());
-        let IsFixDay = (date.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
+        //let IsFixDay = (date.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
         let IsRun = (date.format('YYYY-MM-DD') >= fixDate.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < runDate.format('YYYY-MM-DD')) ? true : false;
         var dtLoop = moment(item.date);
         var dtNow = moment()
         let isGradient = false;
+        let IsFixDay =  fixDateAPI.includes(dtLoop.format('YYYY-MM-DD')) ? true : false;
+
+
         if (dtLoop.format('YYYYMMDD') == dtNow.add('days', prodLead).format('YYYYMMDD')) {
             if (moment().format('YYYYMMDD HH:mm:ss') < moment().format('YYYYMMDD 22:00:00')) {
                 isGradient = true;
             }
         }
+
         var res = <td className={`w-[150px] text-white ${IsHoliday && 'isHoliday'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' ' : ''}`}>
            
              {item.changePlan &&
@@ -467,14 +503,13 @@ function DOPage() {
             //  </Stack>
 
                 <Popover content={content(val, historyPlanDevQTY)}>
-                    <Button  type="primary">change</Button>
+                    <Button className='w-20 text-[14px] bg-[#369495] text-white'>เปลี่ยนแผน !</Button>
                 </Popover> 
-  
-                 
-          
-                 
-            } 
+      
+            }
 
+            <br />
+            
             {   
                 val > 0 ? (val != prev ? 
                
@@ -500,7 +535,7 @@ function DOPage() {
         let date = moment(item.date);
         let ThisDay = moment();
         let IsHoliday = ['SAT', 'SUN'].includes(date.format('ddd').toUpperCase());
-        let IsFixDay = (date.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
+        //let IsFixDay = (date.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
         let IsRun = (date.format('YYYY-MM-DD') >= fixDate.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < runDate.format('YYYY-MM-DD')) ? true : false;
         var dtLoop = moment(item.date);
         var dtNow = moment()
@@ -508,6 +543,8 @@ function DOPage() {
         let ymdLoop = dtLoop.format('YYYYMMDD');
         let part = row.part;
         let type = row.name;
+        let IsFixDay =  fixDateAPI.includes(dtLoop.format('YYYY-MM-DD')) ? true : false;
+
         if (ymdLoop == dtNow.add('days', prodLead).format('YYYYMMDD')) {
             if (moment().format('YYYYMMDD HH:mm:ss') < moment().format('YYYYMMDD 22:00:00')) {
                 isGradient = true;
@@ -549,12 +586,13 @@ function DOPage() {
         let date = moment(item.date);
         let ThisDay = moment().subtract(8, 'hours');
         let IsHoliday = ['SAT', 'SUN'].includes(date.format('ddd').toUpperCase());
-        let IsFixDay = (date.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
+        //let IsFixDay = (date.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
         let IsRun = (date.format('YYYY-MM-DD') >= fixDate.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < runDate.format('YYYY-MM-DD')) ? true : false;
         var dtLoop = moment(item.date);
         var dtNow = moment()
         let isGradient = false;
         let ymdLoop = dtLoop.format('YYYYMMDD');
+        let IsFixDay =  fixDateAPI.includes(dtLoop.format('YYYY-MM-DD')) ? true : false;
         // let part = row.part;
         // let type = row.name;
         if (ymdLoop == dtNow.add('days', prodLead).format('YYYYMMDD')) {
@@ -570,9 +608,10 @@ function DOPage() {
         //         nStockPervDay = (val + dataGetStock8AM[0].plan) - dataGetStock8AM[0].do;
         //     }
         // }
+        
         var res = <td className={`w-[150px]  text-white ${IsHoliday && 'isHoliday'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' ' : ''}`}>
             {
-                (ThisDay.format('YYYYMMDD') == date.format('YYYYMMDD') && val == 0) ? <span className='text-red-500 text-[10px]'>[PO FIFO is not available.]</span> : <NumericFormat className={`font-['Inter'] font-semibold  cursor-pointer ${val > 0 ? row.classs : 'text-red-500'}`} displayType='text' thousandSeparator="," value={val != 0 ? val : ''} decimalScale={2} />
+                (ThisDay.format('YYYYMMDD') == date.format('YYYYMMDD') && val == 0) ? <span className='text-red-500 text-[10px]'>[PO FIFO is not available.]</span> : <NumericFormat className={`font-['Inter'] font-semibold  cursor-pointer ${val > 0 ? row.classs : 'text-red-500'}`} displayType='text' thousandSeparator="," value={val != 0 ? val : '0'} decimalScale={2} />
             }
         </td>;
         return res;
@@ -744,7 +783,7 @@ function DOPage() {
                                                                 {/* ${IsHoliday && 'isHoliday'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' bg-red-500 text-white' : ''} */}
                                                                     {_ThStartMonth}
                                                                     <TableCell
-                                                                        className={`text-white ${IsFixDay && 'bg-red-500'} ${IsHoliday && 'isHoliday'}`}
+                                                                        className={`${IsFixDay && 'text-white bg-red-500'} ${IsHoliday && 'isHoliday'} ${(IsRun && !IsHoliday) && 'bg-[#0fae76] text-white'} `}
                                                                         key={i}
                                                                         align={column.numeric || false ? 'center' : 'center'}
                                                                         style={{ width: column.width, padding: 0, height: column.height, maxWidth: '140px' }}
@@ -763,7 +802,8 @@ function DOPage() {
                                                                 let ThisDay = moment();
                                                                 let LoopDay = moment(column.date);
                                                                 let IsHoliday = ['SAT', 'SUN'].includes(moment(column.date).format('ddd').toUpperCase());
-                                                                let IsFixDay = (LoopDay.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && LoopDay.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
+                                                                // let IsFixDay = (LoopDay.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && LoopDay.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
+                                                                let IsFixDay =  fixDateAPI.includes(LoopDay.format('YYYY-MM-DD')) ? true : false;
                                                                 let IsRun = (LoopDay.format('YYYY-MM-DD') >= fixDate.format('YYYY-MM-DD') && LoopDay.format('YYYY-MM-DD') < runDate.format('YYYY-MM-DD')) ? true : false;
                                                                 var dtLoop = moment(column.date);
                                                                 var dtNow = moment()
@@ -775,14 +815,15 @@ function DOPage() {
                                                                 }
                                                                 let toDay = moment(column.label).format('YYYYMMDD') == dayCurrent.format('YYYYMMDD');
                                                                 return <TableCell
-                                                                    className={`${IsHoliday && 'isHoliday'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' bg-red-500 text-white' : ''}`}
+                                                                    // className={`${IsHoliday && 'isHoliday'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' bg-red-500 text-white' : ''}`}
+                                                                    className={`${IsFixDay && 'text-white bg-red-500'}  ${(IsRun && !IsHoliday) && 'bg-[#0fae76]'} ${IsHoliday && 'isHoliday'}`}
                                                                     key={i}
                                                                     align={column.numeric || false ? 'center' : 'center'}
                                                                     style={{ width: column.width, padding: 0, height: column.height }}
                                                                 >
                                                                     {
                                                                         column.type == 'day' && <div className='bg-transparent flex items-center justify-center gap-1 '>
-                                                                            <span className={`bg-transparent text-white ${toDay && 'font-semibold'}`}>{moment(column.label).format('D')}</span>
+                                                                            <span className={`${IsFixDay && 'text-white bg-red-500'} ${(IsRun && !IsHoliday) && 'bg-[#0fae76] text-white'} ${IsHoliday && 'bg-black text-white'} ${toDay && 'font-semibold'}`}>{moment(column.label).format('D')}</span>
                                                                             <div className='bg-transparent flex items-center justify-center'>{toDay ? <div className='text-yellow-400 bg-transparent  font-semibold tracking-wider rounded-md shadow-md px-[4px] py-[2px]' >[ Today ]</div> : ''}</div>
                                                                         </div>
                                                                     }
@@ -791,7 +832,7 @@ function DOPage() {
                                                         }
                                                     </tr>
                                                 </>
-                                             }}
+                                            }}
                                             itemContent={(index, item) => {
                                                 let title = '';
 
@@ -844,6 +885,7 @@ function DOPage() {
                                                                 if (moment(o.date).format('DD') == "01") {
                                                                     isStartMonth = true;
                                                                 }
+                                                                
                                                                 return isStartMonth == true ? <><td></td>{view}</> : view;
                                                             }) : <td colSpan={30} className='td-line h-[20px]'></td>
                                                         }

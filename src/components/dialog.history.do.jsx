@@ -31,6 +31,7 @@ function DialogHistoryDO(props) {
   const prodLead = param.prodLead;
   const [canEditDO, setCanEditDO] = useState(false);
   const redux = useSelector((state) => state.mainReducer);
+  const reduxFixDates = useSelector((state) => state.fixDateStateReducer.fixDates[state.fixDateStateReducer.fixDates.length-1]);
   const [doEdit, setDoEdit] = useState(doVal);
   const [log, setLog] = useState([]);
   const [load, setLoad] = useState(true);
@@ -42,10 +43,8 @@ function DialogHistoryDO(props) {
   const init = async () => {
     setLoad(true);
     setDoEdit(doVal);
-    if (
-      moment().add("days", prodLead).format("YYYYMMDD") >=
-      moment(date).format("YYYYMMDD")
-    ) {
+    // if (moment().add("days", prodLead).format("YYYYMMDD") >=moment(date).format("YYYYMMDD")) {
+    if(moment(reduxFixDates).format("YYYYMMDD") >=moment(date).format("YYYYMMDD")){
       setCanEditDO(true);
     } else {
       setCanEditDO(false);
