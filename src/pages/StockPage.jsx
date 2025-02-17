@@ -69,7 +69,6 @@ function PartPage() {
         var dtTo = dayjs(dtNow).add(filterPdLt, 'day').format('YYYYMMDD');
         setLoadingData(true);
         ServiceGetPlan(supplier).then((res) => {
-            console.log(res.data)
             setDataDefault(res.data.data);
             var masterBuff = res.data.master;
             var dtLoop = dayjs();

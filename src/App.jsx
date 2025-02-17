@@ -423,6 +423,12 @@ function App() {
                                   <ItemCell dataSet={plan[part]} keyShow='po' _class='poVal' endDate={endDate}></ItemCell>
                                 </TableRow>
                               }
+                              // ******* SHOW CAL BOX UPDATE 29/01/25 ********
+                              {                 
+                                reducer.titles[9].checked && <TableRow>
+                                  <ItemCell dataSet={plan[part]} keyShow='box' textColor='text-teal-300' endDate={endDate}></ItemCell>
+                                </TableRow>
+                              }
 
                             </TableBody>
                           </Table>

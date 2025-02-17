@@ -9,6 +9,10 @@ import DialogVenderDetail from '../components/DialogVenderDetail';
 import { Button, Select } from 'antd';
 import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import ModalAddDrawing from '../components/modal.add.drawing';
+import Switch from '@mui/material/Switch';
+import TablePagination from '@mui/material/TablePagination';
+
+
 function MasterPage() {
     const [listType, setListType] = useState(['part', 'vender'])
     const [typeSelected, setTypeSelected] = useState('part');
@@ -35,6 +39,20 @@ function MasterPage() {
     const dispatch = useDispatch();
     var once = false;
     const [openModalAddDrawing, setOpenModalAddDrawing] = useState(false);
+    const redux = useSelector((state) => state.mainReducer);
+
+    const [page, setPage] = React.useState(0);
+    const [rowsPerPage, setRowsPerPage] = React.useState(15);
+  
+    const handleChangePage = (event, newPage) => {
+      setPage(newPage);
+    };
+  
+    const handleChangeRowsPerPage = (event) => {
+      setRowsPerPage(+event.target.value);
+      setPage(0);
+    };
+    
     useEffect(() => {
         if (!once) {
             async function getData() {
@@ -49,7 +67,6 @@ function MasterPage() {
                         setFilterContent({ ...filterContent, vender: venders.data[0] })
                         reducer.filter.master.vender = venders.data[0]
                     }
-                    console.log(reducer.filter.master?.vender?.vdCode)
                     const content = await getMaster({ type: typeSelected, vender: reducer.filter.master?.vender?.vdCode == undefined ? reducer.filter.master.vender : reducer.filter.master.vender.vdCode });
                     setData(content);
                     setDataDefault(content);
@@ -68,6 +85,7 @@ function MasterPage() {
 
 
     const filterData = (search) => {
+      
         const filteredRows = dataDefault.filter((row) => {
             if (typeSelected.value == 'vender') {
                 return row.vdDesc.toLowerCase().includes(event.target.value.toLowerCase()) || row.vdCode.toLowerCase().includes(event.target.value.toLowerCase()) || (row.vdMinDelivery + '').includes(event.target.value.toLowerCase()) || (row.vdMaxDelivery + '').includes(event.target.value.toLowerCase())
@@ -77,19 +95,21 @@ function MasterPage() {
         });
         if (search.length) {
             setData(filteredRows);
+            console.log(filteredRows)
         } else {
             setData(dataDefault)
         }
     }
     const dialogVenderDetail = (vdcode, loading = true) => {
+
         setVenderSelected(vdcode);
         setOpenVenderDetail(true);
     }
 
-    const handleOpenDialogPartDetail = (part) => {
+    const handleOpenDialogPartDetail = (part,vdCode) => {
         setOpenBackdrop(true);
         async function getPartDetail() {
-            const content = await ServiceGetPartDetail({ part: part });
+            const content = await ServiceGetPartDetail({ part: part,vdCode:vdCode });
             setPartDetail(content);
             setOpenBackdrop(false);
         }
@@ -98,7 +118,8 @@ function MasterPage() {
     }
 
     const handleMasterPartUpdate = () => {
-        ServiceUpdateMasterPart(partDetail).then((res) => {
+        let _partDetail = { ...partDetail, active: partDetail.active ? "ACTIVE" : "INACTIVE" , updateBy: redux.id};      
+        ServiceUpdateMasterPart(_partDetail).then((res) => {
             setEffect(!effect);
             setOpenDialogPartDetail(false);
         })
@@ -156,7 +177,8 @@ function MasterPage() {
                                     </Paper>
                                 </div>
                             </div>
-                            <div className='bg-white overflow-auto h-[100%] w-full'>
+                            <div className='bg-white overflow-auto h-full w-full'>
+                               <TableContainer>
                                 <Table size='small' id="tbContent" stickyHeader={true}>
                                     <TableHead>
                                         <TableRow>
@@ -178,16 +200,20 @@ function MasterPage() {
                                                         <TableCell className='text-center border'>BOX QTY</TableCell>
                                                         <TableCell className='text-center border'>BOX MIN</TableCell>
                                                         <TableCell className='text-center border'>BOX MAX</TableCell>
+                                                        <TableCell className='text-center border'>BOX/Pallet</TableCell>
                                                         <TableCell className='text-center border'>VENDER</TableCell>
+                                                        <TableCell className='text-center border'>STATUS</TableCell>
                                                         <TableCell className='text-center border'>#</TableCell>
                                                     </>
                                             }
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
+                                            
                                         {
+                                          
                                             loading ? <TableRow><TableCell colSpan={typeSelected == 'vender' ? 6 : 9} className='text-center'><CircularProgress /></TableCell></TableRow> : (
-                                                data.length ? data.map((item, index) => {
+                                                data.length ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item, index) => {
                                                     return typeSelected == 'vender' ? <TableRow key={index}>
                                                         <TableCell className='text-center  border'>{item?.vdCode}</TableCell>
                                                         <TableCell className='font-bold border '>{item?.vdDesc}</TableCell>
@@ -206,8 +232,10 @@ function MasterPage() {
                                                             <TableCell className='border text-right font-bold '>{item?.boxQty != undefined ? Number(item.boxQty).toLocaleString('en') : ''}</TableCell>
                                                             <TableCell className='border text-right font-bold '>{item?.boxMin != undefined ? Number(item.boxMin).toLocaleString('en') : ''}</TableCell>
                                                             <TableCell className='border text-right font-bold '>{item?.boxMax != undefined ? Number(item.boxMax).toLocaleString('en') : ''}</TableCell>
+                                                            <TableCell className='border text-right font-bold '>{item?.boxPerPallet != undefined ? Number(item.boxPerPallet).toLocaleString('en') : '0'}</TableCell>
                                                             <TableCell className='border text-right font-bold'>{item?.vdCode}</TableCell>
-                                                            <TableCell className='border text-center'><div className='flex gap-1 justify-center'><Button type='primary' size='small' onClick={() => handleOpenDialogPartDetail(item?.partno)} icon={<EditOutlined />}>แก้ไข</Button></div></TableCell>
+                                                            <TableCell className='border text-right font-bold'>{item?.active}</TableCell>
+                                                            <TableCell className='border text-center'><div className='flex gap-1 justify-center'><Button type='primary' size='small' onClick={() => handleOpenDialogPartDetail(item?.partno,item?.vdCode)} icon={<EditOutlined />}>แก้ไข</Button></div></TableCell>
                                                         </TableRow>
                                                 }) :
                                                     <TableRow><TableCell colSpan={typeSelected == 'vender' ? 6 : 8} className='text-center'>ไม่พบข้อมูลที่คุณค้นหา</TableCell></TableRow>
@@ -215,6 +243,16 @@ function MasterPage() {
                                         }
                                     </TableBody>
                                 </Table>
+                                </TableContainer>
+                                <TablePagination
+                                    rowsPerPageOptions={[10, 25, 100]}
+                                    component="div"
+                                    count={data.length}
+                                    rowsPerPage={rowsPerPage}
+                                    page={page}
+                                    onPageChange={handleChangePage}
+                                    onRowsPerPageChange={handleChangeRowsPerPage}
+                                />
                             </div>
                             <div className='flex justify-end w-full text-white'>
                                 DataCount : {dataDefault.length}
@@ -235,7 +273,7 @@ function MasterPage() {
                 </DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2}>
-                        <Grid item xs={6}>
+                        <Grid item xs={4}>
                             <TextField
                                 id="standard-read-only-input"
                                 label="PART"
@@ -248,20 +286,33 @@ function MasterPage() {
                                 fullWidth
                             />
                         </Grid>
+                        <Grid item xs={2}>
+                            <TextField
+                                id="standard-read-only-input"
+                                label="CM"
+                                value={partDetail?.cm}
+                                variant="standard"
+                                focused
+                                fullWidth
+                                  onChange={(e) => {
+                                    setPartDetail({ ...partDetail, cm: e.target.value })
+                                }}
+                            />
+                        </Grid>
                         <Grid item xs={6}>
                             <TextField
                                 id="standard-read-only-input"
                                 label="NAME"
                                 value={partDetail?.description}
-                                InputProps={{
-                                    readOnly: true,
+                                onChange={(e) => {
+                                    setPartDetail({ ...partDetail, description: e.target.value })
                                 }}
                                 variant="standard"
                                 fullWidth
                                 focused
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid item xs={6}>
                             <TextField
                                 type='number'
                                 id="standard-read-only-input"
@@ -271,7 +322,22 @@ function MasterPage() {
                                 fullWidth
                                 focused
                                 onChange={(e) => {
-                                    setPartDetail({ ...partDetail, boxQty: parseInt(e.target.value) })
+                                    setPartDetail({ ...partDetail, pdlt: parseInt(e.target.value) })
+                                }}
+                            />
+                        </Grid>
+
+                        <Grid item xs={6}>
+                            <TextField
+                                type='number'
+                                id="standard-read-only-input"
+                                label="BOX/PALLET"
+                                value={partDetail?.boxPerPallet}
+                                variant="standard"
+                                fullWidth
+                                focused
+                                onChange={(e) => {
+                                    setPartDetail({ ...partDetail, boxPerPallet: parseInt(e.target.value) })
                                 }}
                             />
                         </Grid>
@@ -344,6 +410,13 @@ function MasterPage() {
                                 }}
                             />
                         </Grid>
+                        <Grid item xs={12}>
+                        <label className="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value={partDetail?.active} checked={(partDetail?.active === true || partDetail?.active === 'ACTIVE') ? true : false} onChange={(e) => setPartDetail({ ...partDetail, active: e.target.checked })} className="sr-only peer"/>
+                                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">ACTIVE</span>
+                                </label>   
+                        </Grid>                   
                     </Grid>
                 </DialogContent>
                 <DialogActions>

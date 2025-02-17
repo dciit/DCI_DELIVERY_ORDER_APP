@@ -50,7 +50,6 @@ function DoPoPage() {
     function getPlan(supplier = '') {
         setLoadingData(true);
         ServiceGetPlan(supplier).then((res) => {
-            console.log(res.data.data)
             setSupplierData((res.data.data).sort((a, b) => (a.date > b.date) ? 1 : -1).filter(item => {
                 return item.doPlan > 0 && item.po == 0
             }));

@@ -29,12 +29,16 @@ function SupplierPage() {
     const [dataDefault, setDataDefault] = useState([]);
     const reducer = useSelector(state => state.mainReducer);
     const [textSearch, setTextSearch] = useState('');
+    const [POBAL, setPOBAL] = useState([]);
+    const [dciHoliday,setdciHoliday] = useState([]);
     let rData = [];
     const filterData = (search) => {
         setTextSearch(search);
         const filteredRows = dataDefault.filter((row) => {
             return row.date.toLowerCase().includes(search.toLowerCase()) || row.part.toLowerCase().includes(search.toLowerCase()) || row.partDesc.toLowerCase().includes(search.toLowerCase())
         });
+        console.log('filter')
+        console.log(filteredRows)
         if (search.length) {
             setSupplierData(filteredRows);
         } else {
@@ -64,12 +68,18 @@ function SupplierPage() {
         const res = await API_GET_DO('41256', supplierFilter, sDateFilter, fDateFilter);
         setMaster(res.partMaster);
         setDataDefault(res.data);
+        setdciHoliday(res.dciHoliday)
+        setPOBAL(res.listPO)
+   
         res.data.sort(function (a, b) {
             return moment(a.date) - moment(b.date);
         });
         let filterByDate = res.data.filter((v, i) => {
-            return moment(v.date).isBetween(sDateFilter, fDateFilter, 'days', '[]');
+            return moment(v.date).isBetween(sDateFilter, fDateFilter, 'days', '[]') 
+            //&& dciHoliday.some((d) => !moment(d).isSame(v.date, 'days', '[]')) ;
         });
+        console.log(sDateFilter)
+
         // setListPO(res.listPO);
         if (typeof filterByDate == 'object' && Object.keys(filterByDate).length) {
             filterByDate.map((oData, iData) => {
@@ -89,19 +99,30 @@ function SupplierPage() {
                     oPOs.map((oPO, iPO) => {
                         let calPO = oPO.whblbqty - reqPO;
                         if (oPO.whblbqty > 0) {
-                            if (calPO < 0 || calPO == 0) {
+                            if (calPO <= 0) {
                                 if (oPO.whblbqty <= reqPO) {
                                     reqPO -= oPOs[iPO].whblbqty;
                                     oPOs[iPO].whblbqty = 0;
                                     oPO.status = 'F';
-                                    filterByDate[iData].listpo.push(`${oPO.pono}${oPO.itemno}`);
+                                    filterByDate[iData].listpo.push(
+                                        {
+                                            pono: `${oPO.pono}${oPO.itemno}`,
+                                            qty:(oPOs[iPO].whqty - oPOs[iPO].whblqty).toLocaleString('en')
+                                        }
+                                        
+                                      );
                                 }
                             } else {
                                 if (reqPO > 0) {
                                     oPOs[iPO].whblbqty -= reqPO;
                                     if (oPO.whblbqty > 0) {
                                         oPO.status = 'P';
-                                        filterByDate[iData].listpo.push(`${oPO.pono}${oPO.itemno}`);
+                                        filterByDate[iData].listpo.push(
+                                            {
+                                                pono: `${oPO.pono}${oPO.itemno}`,
+                                                qty:(oPOs[iPO].whqty - oPOs[iPO].whblqty).toLocaleString('en')
+                                            }
+                                        );
                                     }
                                     reqPO = 0;
                                 }
@@ -217,6 +238,7 @@ function SupplierPage() {
                                         let partmaster = master.filter((vMaster) => {
                                             return vMaster.partno == item.partNo;
                                         });
+                                        
                                         partmaster = partmaster[0];
                                         let partno = item?.partNo;
                                         let doVal = Number(item.do);
@@ -227,15 +249,30 @@ function SupplierPage() {
                                             <TableCell className='text-left pl-3 border align-top text-[12px]'>{partmaster?.description}</TableCell>
                                             <TableCell className='text-center border  align-top   px-[8px] py-[4px] text-[12px] font-semibold text-primary'>{moment(item?.date).format('DD/MM/YYYY')}</TableCell>
                                             <TableCell className='text-center border  align-top   px-[8px] py-[4px] text-[12px]'>09:00</TableCell>
-                                            <TableCell className='text-center border  align-top   px-[8px] py-[4px] text-[12px]'>W1</TableCell>
+                                            <TableCell className='text-center border  align-top   px-[8px] py-[4px] text-[12px]'>{partmaster?.wH_NO}</TableCell>
                                             <TableCell className='text-center border  align-top   px-[8px] py-[4px] text-[12px]'>PART SUPPLY</TableCell>
                                             <TableCell className='text-right font-semibold p-0 pr-[8px] align-top '><NumericFormat displayType='text' thousandSeparator="," value={partmaster.boxQty} decimalScale={2} /></TableCell>
                                             <TableCell className='text-center border  align-top   px-[8px] py-[4px] text-[12px]'>{partmaster.unit}</TableCell>
                                             <TableCell className='text-right pr-2 font-semibold align-top text-[#5c5fc8]'><NumericFormat displayType='text' thousandSeparator="," value={item.do} decimalScale={2} /></TableCell>
-                                            <TableCell className=' border px-[8px] py-[4px] text-[12px] '>
+                                            {/* <TableCell className=' border px-[8px] py-[4px] text-[12px] ' >
+                                            
                                                 {
                                                     (typeof item.listpo != 'undefined' && item.listpo.length) ? item.listpo.join(', ') : <span className='text-red-500'>**********</span>
                                                 }
+                                                
+                                            </TableCell> */}
+                                            <TableCell>
+                                            {item.listpo.map((vPO, iPO) => {
+                                                return ( <>
+                                                        <span >{vPO.pono} </span> &nbsp;&nbsp; 
+                                                        {/* <span className='font-bold'>{(POBAL.filter(x=>x.partno == partno && x.pono+x.itemno == vPO.pono)[0].whqty - POBAL.filter(x=>x.partno == partno && x.pono+x.itemno == vPO.pono)[0].whblqty).toLocaleString('en')} </span> */}
+                                                        <span className='font-bold'>({vPO.qty}) </span>
+
+                                                        </>
+                                                    
+                                                )
+                                            })} 
+
                                             </TableCell>
                                             <TableCell className={`text-center border align-top   px-[8px] py-[4px]   ${(item.doAct != '' && item.doAct != '0') ? 'text-[#009866]' : ''} font-semibold`}>{(item.doAct != '' && item.doAct != '0' ? Number(item.doAct).toLocaleString('en') : '-')}</TableCell>
                                             <TableCell className={`text-right align-top pr-2 font-semibold ${remainVal < 0 ? 'text-[#009866] bg-[#dffff4]' : 'text-red-500 bg-red-50'}`}>

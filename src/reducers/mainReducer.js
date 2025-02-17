@@ -16,6 +16,11 @@ const initialState = {
         { name: 'wip', label: 'WIP', index: 7, disabled: true, checked: false, bgColor: 'bg-gray-400' },
         { name: 'po', label: 'PO', index: 8, disabled: false, checked: false, bgColor: 'bg-teal-500' },
         { name: 'pofifo', label: 'PO FIFO', index: 9, disabled: true, checked: true, bgColor: 'bg-teal-500' },
+        { name: 'box', label: 'BOX', index: 10, disabled: false, checked: false, bgColor: 'bg-teal-500' },
+        // { name: 'pallet', label: 'PALLET', index: 11, disabled: false, checked: false, bgColor: 'bg-teal-500' },
+
+        
+
     ],
     menuLeft: [{
         path: '/do', text: 'D/O PLAN', value: 'd/o'
@@ -31,8 +36,8 @@ const initialState = {
         path: '/calendar', text: 'MASTER', value: 'master'
     }],
     privilegeFilter: {
-        employee: ['plan', 'do', 'stock', 'pofifo'],
-        supplier: ['do', 'doact', 'delivery_management']
+        employee: ['plan','pickList', 'do', 'stock', 'pofifo','box'],
+        supplier: ['do', 'doact', ,'box','delivery_management']
     },
     dayOfWeek: [
         "Sun",
@@ -124,11 +129,14 @@ const IndexReducer = (state = initialState, action) => {
                 state.filters[index].checked = true;
                 index = state.filters.findIndex((item) => item.name == 'stock');
                 state.filters[index].checked = true;
+
             } else {
                 var index = state.filters.findIndex((item) => item.name == 'plan');
                 state.filters[index].checked = false;
                 index = state.filters.findIndex((item) => item.name == 'stock');
                 state.filters[index].checked = false;
+
+                
             }
             return {
                 ...state,

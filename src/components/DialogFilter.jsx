@@ -17,7 +17,6 @@ function DialogFilter(props) {
             <DialogContent dividers>
                 <div className='flex flex-col gap-2'>
                     <Checkbox checked={hiddenPartNoPlan} onChange={(e) => {
-                        console.log(e.target.checked)
                         dispatch({ type: 'SET_HIDDEN_PART_NO_PLAN', payload: e.target.checked })
                     }}>ปิดการแสดงรายการที่ไม่แผนการผลิต</Checkbox>
                     {

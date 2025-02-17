@@ -120,7 +120,6 @@ export function ServicePrivilege(type) {
 }
 
 export function ServiceUpdateDay(data) {
-    console.log(data)
     return http.post('/vender/update/day', data);
 }
 

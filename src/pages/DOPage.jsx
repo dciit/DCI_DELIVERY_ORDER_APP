@@ -74,12 +74,17 @@ function DOPage() {
     const hiddenPartNoPlan = redux?.hiddenPartNoPlan != undefined ? redux.hiddenPartNoPlan : true;
     const dayCurrent = moment().subtract(8, 'hours')
     const [fixDateAPI,setfixDateAPI] = useState([])
+    const [dciHoliday , setdciHoliday] = useState([])
     const [LastFixDateAPI,setLastFixDateAPI] = useState("")
-    const [openWarning,setOpenWarning] = useState(warningStockPayload.isShowModal)
+    // const [openWarning,setOpenWarning] = useState(typeAccout == "employee" ? warningStockPayload.isShowModal : false)
+    const [openWarning,setOpenWarning] = useState(false)
+
+
     useEffect(() => {
         if (!once) {
             init();
             setOnce(true);
+            
         }
     }, [once]);
     async function init() {
@@ -136,6 +141,7 @@ function DOPage() {
 
 
     useEffect(() => {
+        
         let filterData = [];
         try {
             filterData = DOResoure.filter((item) => {
@@ -145,6 +151,7 @@ function DOPage() {
         } catch (e) {
             setDOResult(DOResoure);
         }
+        
     }, [search])
 
     // async function handleOpenEditDO(row, ymd, doVal) {
@@ -169,21 +176,25 @@ function DOPage() {
 
          vdCode = warningStockPayload.isRoute == true ? warningStockPayload.vdcode : vdCode;
          await setSupplierSelected(vdCode)
+   
 
         const initPlan = await API_GET_DO(buyerSelected, vdCode, startDate, endDate, hiddenPartNoPlan)
         setLoading(false);
         setRunningCode(initPlan.nbr);
+        console.log(initPlan.dciHoliday);
 
          if(search.trim().length > 0){
 
             await setData(initPlan.data.filter(item => item.part.toLowerCase().includes(search.toLowerCase())))
             await setfixDateAPI(initPlan.fixDateYMD)
             await setLastFixDateAPI(initPlan.fixDateYMD[initPlan.fixDateYMD.length-1])
+            await setdciHoliday(initPlan.dciHoliday)
 
          }else{
             await setData(initPlan.data);
             await setfixDateAPI(initPlan.fixDateYMD)
             await setLastFixDateAPI(initPlan.fixDateYMD[initPlan.fixDateYMD.length-1])
+            await setdciHoliday(initPlan.dciHoliday)
             dispatch({ type: 'SET_FIX_DATE', payload: initPlan.fixDateYMD });
           
          }
@@ -219,6 +230,7 @@ function DOPage() {
 
     async function initSupplier() {
         const listSuppliers = await API_GET_SUPPLIER_BY_BUYER({ code: buyerSelected });
+      
         if (reducer.typeAccount == 'supplier') {
             setSuppliers(listSuppliers.filter((v) => (v.vdcode == reducer.id)));
         } else {
@@ -243,6 +255,8 @@ function DOPage() {
         let PICKLIST = [];
         let PO = [];
         let PO_FIFO = [];
+        let BOX = [];  // ***** UPDATE 2025/01/28 *****
+        let PALLET = []; // ***** UPDATE 2025/01/28 *****
         // let loop = 0;
         new Set(data.map(n => n.partNo)).forEach(part => {
             let filterData = data.filter(o => o.partNo == part);
@@ -255,9 +269,11 @@ function DOPage() {
                 DOACT.push({ date: item.date, value: item.doAct });
                 PO.push({ date: item.date, value: item.po });
                 PO_FIFO.push({ date: item.date, value: item.pofifo })
+                BOX.push({ date: item.date, value: item.box });  // ***** UPDATE 2025/01/28 *****
+                PALLET.push({date: item.date, value: item.pallet })
                 if (iData == length - 1) {
                     let filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'plan')).length;
-                    if (filter) {
+                    if (filter && item.partNo != "TOTAL") {
                         DATA_FORMAT.push({
                             key: typeAccout == 'supplier' ? false : true,
                             vdCode: item.vdCode,
@@ -269,8 +285,10 @@ function DOPage() {
                             data: PLAN
                         });
                     }
+
+                   
                     filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'pickList')).length;
-                    if (filter) {
+                    if (filter && item.partNo != "TOTAL") {
                         DATA_FORMAT.push({
                             key: false,
                             part: part,
@@ -282,7 +300,7 @@ function DOPage() {
 
                     filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'do')).length;
 
-                    if (filter) {
+                    if (filter && item.partNo != "TOTAL") {
                         DATA_FORMAT.push({
                             key: typeAccout == 'supplier' ? true : false,
                             part: part,
@@ -293,7 +311,7 @@ function DOPage() {
                         });
                     }
                     filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'stock')).length;
-                    if (filter) {
+                    if (filter && item.partNo != "TOTAL") {
                         DATA_FORMAT.push({
                             key: false,
                             part: part,
@@ -303,7 +321,7 @@ function DOPage() {
                         });
                     }
                     filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'doAct')).length;
-                    if (filter) {
+                    if (filter && item.partNo != "TOTAL") {
                         DATA_FORMAT.push({
                             key: false,
                             part: part,
@@ -313,7 +331,7 @@ function DOPage() {
                         });
                     }
                     filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'po')).length;
-                    if (filter) {
+                    if (filter && item.partNo != "TOTAL") {
                         DATA_FORMAT.push({
                             key: false,
                             part: part,
@@ -323,7 +341,7 @@ function DOPage() {
                         });
                     }
                     filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'pofifo')).length;
-                    if (filter) {
+                    if (filter && item.partNo != "TOTAL") {
                         DATA_FORMAT.push({
                             key: false,
                             part: part,
@@ -332,6 +350,52 @@ function DOPage() {
                             data: PO_FIFO
                         });
                     }
+
+                   
+
+                    // ***** UPDATE 2025/01/28 *****
+                    filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'box')).length;
+                    if (filter && item.partNo == "TOTAL") {
+                        DATA_FORMAT.push({
+                            key:  true,
+                            vdCode: item.vdCode,
+                            vdName: item.vdName,
+                            vender: item.vender,
+                            part: part,
+                            classs: 'box',
+                            name: 'box',
+                            data: BOX
+                        });
+                    }
+
+                     // ***** UPDATE 2025/01/28 *****
+                     filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'box')).length;
+                     if (filter && item.partNo !== "TOTAL") {
+                         DATA_FORMAT.push({
+                             key: false,
+                             part: part,
+                             classs: 'box',
+                             name: 'box',
+                             data: BOX
+                         });
+                     }
+
+
+                      // ***** UPDATE 2025/01/28 *****
+                      filter = Object.keys(reducer?.filters?.filter(i => i.checked == true && i.name == 'box')).length;
+                     
+                      if (filter && item.partNo == "TOTAL") {         
+                          DATA_FORMAT.push({
+                              key: false,
+                              part: part,
+                              classs: 'pallet',
+                              name: 'pallet',
+                              data: PALLET
+                          });
+                      }
+                      
+                    
+
                     DATA_FORMAT.push({
                         key: false,
                         part: part,
@@ -346,12 +410,16 @@ function DOPage() {
                     PICKLIST = [];
                     PO = [];
                     PO_FIFO = [];
+                    BOX = []; // ***** UPDATE 2025/01/28 *****
+                    PALLET = []; // ***** UPDATE 2025/01/28 *****
+                  
                 }
             })
 
         })
         setDOResult(DATA_FORMAT);
         setDOResoure(DATA_FORMAT);
+        // console.log(DATA_FORMAT)
         return DATA_FORMAT;
     }
     function FN_SET_COLUMN(vdMaster, supplier) {
@@ -379,10 +447,11 @@ function DOPage() {
             type: 'day',
             numeric: false
         });
-        console.log(column)
+        //console.log(column)
         return column;
     }
     function VIEW_DO(row, item, dateLoop) {
+       
         prodLead = VdMasters[0].vdProdLead - 1;
         fixDate = moment().add(prodLead, 'days');
         runDate = moment(fixDate.add(1, 'days')).add(7, 'days')
@@ -392,6 +461,7 @@ function DOPage() {
         let shortDay = date.format('ddd').toUpperCase();
         let vdDelivery = typeof venderDelivery[vender] != 'undefined' ? venderDelivery[vender] : null;
         let IsHolidayOfVender = (vdDelivery != null && typeof vdDelivery[shortDay] != 'undefined') ? vdDelivery[shortDay] : false;
+    
         let IsHoliday = ['SAT', 'SUN'].includes(shortDay);
         let ThisDay = moment();
         //let IsFixDay = (date.format('YYYY-MM-DD') >= ThisDay.format('YYYY-MM-DD') && date.format('YYYY-MM-DD') < fixDate.format('YYYY-MM-DD')) ? true : false;
@@ -399,6 +469,7 @@ function DOPage() {
         var dtLoop = moment(item.date);
         var dtNow = moment().subtract(8, 'hours');
         let IsFixDay =  fixDateAPI.includes(dtLoop.format('YYYY-MM-DD')) ? true : false;
+        let isdciHoliday =  (dciHoliday.includes(dtLoop.format('YYYYMMDD'))) ? false : true;
         // console.log('this date : ' + ThisDay.format('YYYY-MM-DD'));
         // console.log('fix date : ' + fixDate.format('YYYY-MM-DD'));
         // console.log('run date : ' + fixDate.format('YYYY-MM-DD'));
@@ -417,12 +488,13 @@ function DOPage() {
             }
         }
         let part = row.part;
+        let _vdCode = row.vender
         // let CanEdit = (IsFixDay == true && IsHolidayOfVender == true && typeAccout == 'employee');
         let CanEdit = ((((moment(dtLoop).format('YYYY-MM-DD')) >= (moment(dayCurrent).format('YYYY-MM-DD'))) && ((moment(dtLoop).format('YYYY-MM-DD')) <= (moment(LastFixDateAPI).format('YYYY-MM-DD'))) ) && IsHolidayOfVender == true && typeAccout == 'employee');
-        var res = <td className={`px-1 w-[150px]  transition-all duration-300 hover:cursor-pointer text-white ${IsHoliday && 'isHoliday'} ${IsHolidayOfVender && 'IsHolidayOfVender'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' ' : ''}`} onClick={() => CanEdit == true ? handleHistory(part, date.format('YYYYMMDD'), val, prodLead) : false}>
+        var res = <td className={`px-1 w-[150px]  transition-all duration-300 hover:cursor-pointer text-white ${IsHoliday && 'isHoliday'} ${IsHolidayOfVender && 'IsHolidayOfVender'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' ' : ''}`} onClick={() => CanEdit == true ? handleHistory(part, date.format('YYYYMMDD'), val, prodLead,_vdCode) : false}>
             {   
-         
-                IsHolidayOfVender == false ? <Tooltip title='Supplier ไม่ได้ระบุให้ส่งวันนี้'>
+                
+                (IsHolidayOfVender == false || isdciHoliday == false)? <Tooltip title='Supplier ไม่ได้ระบุให้ส่งวันนี้'>
                     <div className='flex flex-col items-center justify-center'>
                         <CloseIcon className='text-red-500' /><span className='text-red-500 text-[10px] opacity-80'>[No Delivery]</span>
                     </div>
@@ -441,9 +513,9 @@ function DOPage() {
         </td>;
         return res;
     }
-    function handleHistory(part, logToDate, doVal, prodlead) {
+    function handleHistory(part, logToDate, doVal, prodlead,_vdCode) {
         setParamDialogHistory({
-            part: part, date: logToDate, do: doVal, prodLead: prodlead
+            part: part, date: logToDate, do: doVal, prodLead: prodlead, vdCode : _vdCode
         })
     }
     useEffect(() => {
@@ -570,7 +642,7 @@ function DOPage() {
                 </Stack> : (
                     val > 0 ? (val != prev ? <Badge color={`${val > prev ? 'success' : 'error'}`} className={`buget-do cursor-pointer ${row.classs}`} badgeContent={`${val > prev ? '+' : '-'}${val > prev ? (val - prev) : (prev - val)}`} max={9999}>
                         {val}
-                    </Badge> : <NumericFormat className={`font-['Inter'] font-semibold  cursor-pointer ${row.classs}`} displayType='text' allowLeadingZeros thousandSeparator="," value={!PlanIsDiff ? val : 999} decimalScale={2} />) : (val == 0 ? '' : <span className='text-red-500 font-semibold'>{val}</span>)
+                    </Badge> : <NumericFormat className={`font-['Inter'] font-semibold  cursor-pointer ${row.classs}`} displayType='text' allowLeadingZeros thousandSeparator="," value={!PlanIsDiff ? val : 999} decimalScale={2} />) : (val == 0 ? '' : <span className='text-red-500 font-semibold'>{Math.round(val*100)/100}</span>)
                 )
             }
         </td>;
@@ -779,6 +851,7 @@ function DOPage() {
                                                                         isGradient = true;
                                                                     }
                                                                 }
+
                                                                 return <>
                                                                 {/* ${IsHoliday && 'isHoliday'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' bg-red-500 text-white' : ''} */}
                                                                     {_ThStartMonth}
@@ -813,6 +886,7 @@ function DOPage() {
                                                                         isGradient = true;
                                                                     }
                                                                 }
+                                                                let isdciHoliday =  (dciHoliday.includes(dtLoop.format('YYYYMMDD'))) ? false : true;
                                                                 let toDay = moment(column.label).format('YYYYMMDD') == dayCurrent.format('YYYYMMDD');
                                                                 return <TableCell
                                                                     // className={`${IsHoliday && 'isHoliday'} ${(IsFixDay && !IsHoliday && !isGradient) && 'isFix'} ${(IsRun && !IsHoliday) && 'isRun'} ${isGradient ? ' bg-red-500 text-white' : ''}`}
@@ -823,7 +897,7 @@ function DOPage() {
                                                                 >
                                                                     {
                                                                         column.type == 'day' && <div className='bg-transparent flex items-center justify-center gap-1 '>
-                                                                            <span className={`${IsFixDay && 'text-white bg-red-500'} ${(IsRun && !IsHoliday) && 'bg-[#0fae76] text-white'} ${IsHoliday && 'bg-black text-white'} ${toDay && 'font-semibold'}`}>{moment(column.label).format('D')}</span>
+                                                                            <span className={`${IsFixDay && 'text-white bg-red-500'} ${(IsRun && !IsHoliday) && 'bg-[#0fae76] text-white'} ${IsHoliday  && 'bg-black text-white'} ${toDay && 'font-semibold'}`}>{moment(column.label).format('D')}</span>
                                                                             <div className='bg-transparent flex items-center justify-center'>{toDay ? <div className='text-yellow-400 bg-transparent  font-semibold tracking-wider rounded-md shadow-md px-[4px] py-[2px]' >[ Today ]</div> : ''}</div>
                                                                         </div>
                                                                     }
@@ -835,25 +909,32 @@ function DOPage() {
                                             }}
                                             itemContent={(index, item) => {
                                                 let title = '';
-
-                                                if (item.name == 'plan') {
+                                                if (item.name == 'plan' && item.part !== 'TOTAL') {
                                                     title = <span className={`title ${item.name}`}>Prod Plan (Plan * BOM)</span>;
-                                                } else if (item.name == 'do') {
+                                                } else if (item.name == 'do' && item.part !== 'TOTAL') {
                                                     title = <span className={`title ${item.name}`}>D/O Plan</span>;
-                                                } else if (item.name == 'stock') {
+                                                } else if (item.name == 'stock' && item.part !== 'TOTAL') {
                                                     title = <span className={`title ${item.name}`}>P/S Stock Simulate</span>;
-                                                } else if (item.name == 'pickList') {
+                                                } else if (item.name == 'pickList' && item.part !== 'TOTAL' ) {
                                                     title = <span className={`title ${item.name}`}>Picklist</span>;
-                                                } else if (item.name == 'doAct') {
+                                                } else if (item.name == 'doAct'&& item.part !== 'TOTAL') {                                             
                                                     title = <span className={`title ${item.name}`}>D/O Act.</span>;
-                                                } else if (item.name == 'po') {
+                                                } else if (item.name == 'po'&& item.part !== 'TOTAL') {
                                                     title = <span className={`title ${item.name}`}>PO</span>;
-                                                } else if (item.name == 'pofifo') {
+                                                } else if (item.name == 'pofifo'&& item.part !== 'TOTAL') {
                                                     title = <span className={`title ${item.name}`}>PO BALANCE</span>;
                                                 }
-                                                if (item.data.length) {
+                                                else if (item.name == 'box') {                                             
+                                                    title = <span className={`title ${item.name}`}>BOX</span>;
+                                                }
+                                                else if (item.name == 'pallet' && item.part == 'TOTAL') {   
+                                                                                           
+                                                    title = <span className={`title ${item.name}`}>PALLET</span>;
+                                                }
                                                
-                                                    return < Fragment key={`${item.classs}-${index} `}>
+                                                if (item.data.length ) {
+                                               
+                                                    return <Fragment key={`${item.classs}-${index} `}>
                                                         <td className={`${item.name == 'line' && 'td-line'} stuck ${item.key ? 'z-50' : ''}`}>
                                                             <Stack direction={'row'} className='w-[400px]'>
                                                                 <PartComponent part={item} master={reduxPartMaster} vdCode={item.vdCode} vdName={item.vdName} partNo={item.part} />
@@ -862,30 +943,40 @@ function DOPage() {
                                                                 </div>
                                                             </Stack>
                                                         </td>
+
+                                                        
+
+
+
                                                         {
                                                             item.name != 'line' ? item.data.map((o, index) => {
-                                                             
+                                                                
                                                                 let view = '';
-                                                                if (item.name == 'plan') {
+                                                                if (item.name == 'plan' && item.part !== 'TOTAL') {
                                                                     view = VIEW_PLAN(item, o, index)
-                                                                } else if (item.name == 'do') {
+                                                                } else if (item.name == 'do' && item.part !== 'TOTAL') {
                                                                     view = VIEW_DO(item, o, o.date);
-                                                                } else if (item.name == 'stock') {
+                                                                } else if (item.name == 'stock' && item.part !== 'TOTAL') {
                                                                     view = VIEW_COMMON(item, o, index);
-                                                                } else if (item.name == 'pickList') {
+                                                                } else if (item.name == 'pickList' && item.part !== 'TOTAL') {
                                                                     view = VIEW_COMMON(item, o, index);
-                                                                } else if (item.name == 'doAct') {
+                                                                } else if (item.name == 'doAct' && item.part !== 'TOTAL') {
                                                                     view = VIEW_COMMON(item, o, index);
-                                                                } else if (item.name == 'po') {
+                                                                } else if (item.name == 'po' && item.part !== 'TOTAL') {
                                                                     view = VIEW_COMMON(item, o, index);
-                                                                } else if (item.name == 'pofifo') {
+                                                                } else if (item.name == 'pofifo' && item.part !== 'TOTAL') {
                                                                     view = VIEW_PO_FIFO(item, o, index);
-                                                                }
+                                                                } else if (item.name == 'box') {
+                                                                    view = VIEW_COMMON(item, o, index);
+                                                                } 
+                                                                else if (item.name == 'pallet') {
+                                                                    view = VIEW_COMMON(item, o, index);
+                                                                } 
+                                                                
                                                                 let isStartMonth = false;
                                                                 if (moment(o.date).format('DD') == "01") {
                                                                     isStartMonth = true;
                                                                 }
-                                                                
                                                                 return isStartMonth == true ? <><td></td>{view}</> : view;
                                                             }) : <td colSpan={30} className='td-line h-[20px]'></td>
                                                         }

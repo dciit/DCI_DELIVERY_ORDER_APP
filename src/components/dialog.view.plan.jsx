@@ -48,7 +48,6 @@ function DialogViewPlan(props) {
                                 <td colSpan={4} className='border text-center' >ไม่พบข้อมูล</td>
                             </tr> : (
                                 content.map((oContent, iContent) => {
-                                    console.log(oContent)
                                     return <tr key={iContent} className={`${iContent == 0 && 'bg-blue-50'}`}>
                                         <td className='border text-center'>{oContent.runningCode}</td>
                                         <td className='border text-center'>{oContent.rev}</td>

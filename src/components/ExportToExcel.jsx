@@ -37,6 +37,7 @@ function ExportToExcel(props) {
             <tbody>
                 <tr>
                     <th>PARTNO</th>
+                    <th>CM</th>
                     <th>DATE</th>
                     {
                         reducer.typeAccount == 'employee' && <th>PLAN</th>
@@ -45,9 +46,15 @@ function ExportToExcel(props) {
                     {
                         reducer.typeAccount == 'employee' && <th>STOCK</th>
                     }
+                    {
+                        reducer.typeAccount == 'employee' && <th>BOX</th>
+                    }
+                      {
+                        reducer.typeAccount == 'employee' && <th>PALLET</th>
+                    }
                     <th>VENDER</th>
                 </tr>
-                {
+                {   
                     data.map((item, index) => {
                         // console.log(item)
                         var date = item.date;
@@ -56,6 +63,7 @@ function ExportToExcel(props) {
                         // }
                         return <tr key={index}>
                             <th>{item.partNo}</th>
+                            <th>{item.cm}</th>
                             <th>{date}</th>
                             {
                                 reducer.typeAccount == 'employee' && <th>{parseFloat(item.plan).toLocaleString('en')}</th>
@@ -63,6 +71,12 @@ function ExportToExcel(props) {
                             <th>{parseFloat(item?.do).toLocaleString('en')}</th>
                             {
                                 reducer.typeAccount == 'employee' && <th>{parseFloat(item.stock).toLocaleString('en')}</th>
+                            }
+                              {
+                                reducer.typeAccount == 'employee' && <th>{parseFloat(item.box).toLocaleString('en')}</th>
+                            }
+                              {
+                                reducer.typeAccount == 'employee' && <th>{parseFloat(item.pallet).toLocaleString('en')}</th>
                             }
                             <th>{item.vender}</th>
                         </tr>

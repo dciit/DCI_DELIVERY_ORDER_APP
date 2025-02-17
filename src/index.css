@@ -18,7 +18,7 @@ body{
 table.tbMain, .tbMain th, .tbMain td {
     border: 1px solid black;
     border-collapse: collapse;
-    padding: 0px;
+    padding: 10px;
 
   }
   

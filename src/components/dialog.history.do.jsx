@@ -29,6 +29,7 @@ function DialogHistoryDO(props) {
   const part = param.part;
   const doVal = param.do;
   const prodLead = param.prodLead;
+  const logVdCode = param.vdCode;
   const [canEditDO, setCanEditDO] = useState(false);
   const redux = useSelector((state) => state.mainReducer);
   const reduxFixDates = useSelector((state) => state.fixDateStateReducer.fixDates[state.fixDateStateReducer.fixDates.length-1]);
@@ -57,6 +58,7 @@ function DialogHistoryDO(props) {
       doRunning: doRunning,
       doRev: Number(doRev),
       logDo: doVal,
+      logVdCode : logVdCode,
     });
     setLog(api);
     setLoad(false);
@@ -71,6 +73,7 @@ function DialogHistoryDO(props) {
         doVal: doEdit,
         doPrev: doVal,
         empCode: redux.id,
+        vdCode : logVdCode
       });
       if (apiUpdateDOManual.status == 1) {
         let dataOfResult = data.filter((o) => o.part == part && o.name == "do");
@@ -194,16 +197,18 @@ function DialogHistoryDO(props) {
                 <table className={`w-full `}>
                   <thead>
                     <tr className="bg-[#5c5fc8] text-white">
-                      <td className="border text-center">แผนวันที่</td>
-                      <td className="border text-center">แผนการผลิต</td>
-                      <td className="border text-center">คงเหลือ</td>
-                      <td className="border text-center">ความต้องการ</td>
-                      <td className="border text-center">ต่อกล่อง</td>
-                      <td className="border text-center">ยอดสั่งซื้อ D/O</td>
-                      <td className="border text-center">ลงวันที่</td>
+                      <td className="border text-center">ลงแผนวันที่</td>
+                      {/* <td className="border text-center">แผนการผลิต</td>
+                      <td className="border text-center">คงเหลือ</td> */}
+                      <td className="border text-center">ยอดสั่งซื้อ D/O เก่า</td>
+                      {/* <td className="border text-center">ต่อกล่อง</td> */}
+                      <td className="border text-center">ยอดสั่งซื้อ D/O ใหม่</td>
+                      <td className="border text-center">แก้ไขโดย</td>
+                      <td className="border text-center">แก้ไขวันที่</td>
                       <td className="border text-center">หมายเหตุ</td>
                     </tr>
                   </thead>
+              
                   <tbody>
                     {log.length == 0 ? (
                       <tr>
@@ -228,23 +233,31 @@ function DialogHistoryDO(props) {
                                 "DD/MM/YYYY"
                               )}
                             </td>
-                            <td className={`border text-center`}>
+                            {/* <td className={`border text-center`}>
                               {o.logFromPlan.toLocaleString("en")}
-                            </td>
-                            <td className={`border text-center`}>
+                            </td> */}
+                            {/* <td className={`border text-center`}>
                               {o.logFromStock.toLocaleString("en")}
                             </td>
                             <td className={`border text-center`}>
                               {o.logNextStock.toLocaleString("en")}
-                            </td>
-                            <td className={`border text-center`}>{o.logBox}</td>
+                            </td> */}
+                            
+                            {/* <td className={`border text-center`}>{o.logBox}</td> */}
                             <td className={`border text-center`}>
                               {o.logDo.toLocaleString("en")}
                             </td>
                             <td className={`border text-center`}>
-                              {moment(o.logNextDate, "YYYYMMDD").format(
-                                "DD/MM/YYYY"
-                              )}
+                              {o.logNextDo.toLocaleString("en")}
+                            </td>
+                            
+                            <td className={`border text-center`}>
+                              {o.logUpdateBy}
+                            </td>
+                            <td className={`border text-center`}>
+                              {moment(o.logUpdateDate, "YYYYMMDD").format(
+                                  "DD/MM/YYYY"
+                                )}
                             </td>
                             <td className={`border text-center text-red-500`}>
                               {o.logState == "notused"
@@ -258,7 +271,7 @@ function DialogHistoryDO(props) {
                         );
                       })
                     )}
-                    <tr className="bg-[#5c5fc8] text-white">
+                    {/* <tr className="bg-[#5c5fc8] text-white">
                       <td className="border text-right pr-6 py-3" colSpan={5}>
                         ยอดสั่งซื้อ
                       </td>
@@ -271,7 +284,7 @@ function DialogHistoryDO(props) {
                           .toLocaleString("en")}
                       </td>
                       <td className="border text-center" colSpan={2}></td>
-                    </tr>
+                    </tr> */}
                   </tbody>
                 </table>
               )}

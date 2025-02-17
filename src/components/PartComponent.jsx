@@ -13,21 +13,25 @@ function PartComponent(props) {
             setVenderName(itemVender[0].vdDesc);
         }
         if (Object.keys(item).length) {
+         
             setPartDetail(item[0]);
         }
     }, []);
     return (
         <div className='w-[200px] bg-white'>
             {
-                part?.key && <Stack className='box-part-detail absolute ' alignItems={'start'} pl={2} pt={1}>
+                (part?.key ) && <Stack className='box-part-detail absolute ' alignItems={'start'} pl={2} pt={1}>
                     <Stack direction={'row'} gap={1}  >
                         <div className="flex flex-row gap-1 ">
-                            <span className=" text-[#5c5fc8] font-bold font-['Inter']">{partNo}</span>
+                    
+                            <span className={`text-[#5c5fc8] font-bold font-['Inter'] ${partNo == "TOTAL" && "text-3xl text-green-500 font-bold"}`}>{partNo}</span>
                             <span className=" text-[#5c5fc8] font-semibold font-['Inter']">{partDetail?.cm}</span>
                         </div>
                         <Typography className='unitVal'>{partDetail?.unit}</Typography>
                     </Stack>
                     <Typography className='partDesc text-[12px]'>{partDetail?.description}</Typography>
+                    {partNo != "TOTAL" &&    
+                    <>
                     <Stack direction={'row'} gap={1} className="text-[12px] font-['Inter']">
                         <span className='text-[14px]'> PD.LT </span>
                         <span className="boxVal text-[14px] font-semibold font-['Inter']">{partDetail?.pdlt}</span>
@@ -38,7 +42,10 @@ function PartComponent(props) {
                         <span className='text-[14px]'> MAX </span>
                         <span className='maxVal text-[14px]'>{partDetail?.boxMax != 99999 ? partDetail?.boxMax : '-'}</span>
                     </Stack>
+                
                     <Typography className='text-[12px] vender-name'>{vdName} </Typography>
+                    </>
+                }
                 </Stack>
             }
         </div>
