@@ -180,8 +180,7 @@ function DOPage() {
 
         const initPlan = await API_GET_DO(buyerSelected, vdCode, startDate, endDate, hiddenPartNoPlan)
         setLoading(false);
-        setRunningCode(initPlan.nbr);
-        console.log(initPlan.dciHoliday);
+        setRunningCode(initPlan.nbr); 
 
          if(search.trim().length > 0){
 
@@ -204,9 +203,6 @@ function DOPage() {
         dispatch({ type: 'SET_PART_MASTER', payload: initPlan.partMaster })
         dispatch({ type: 'SET_VENDER_MASTER', payload: initPlan.venderMaster });
         await setColumns(await FN_SET_COLUMN(initPlan.venderSelected, supplierSelected));
-
-
-
     }
     useEffect(() => {
         if (supplierSelected != '') {
@@ -734,20 +730,20 @@ function DOPage() {
                             <Grid item xs={12} className='flex items-center' gap={3}>
                                 {
                                     reducer.typeAccount == 'employee' &&
-                                    <>
+                                    <div>
                                         <span className='color-mtr font-bold'>Buyer</span>
                                         <Select showSearch className='w-full' value={buyerSelected} onChange={(e) => FN_CHANGE_BUYER(e)} options={buyers.map((item) => { return { label: item.fullname, value: item.empcode } })} optionRender={(option) => (
-                                            <Space >
+                                            <div >
                                                 <span role="img" >{`${option.data.label} (${option.key})`}</span>
-                                            </Space>
+                                            </div>
                                         )}></Select>
-                                    </>
+                                    </div>
                                 }
                                 <span className='color-mtr font-bold'>Supplier</span>
                                 <Select showSearch className='w-full' value={supplierSelected} onChange={(e) => setSupplierSelected(e)} options={suppliers.map((item) => { return { label: item.vdname, value: item.vdcode } })} optionRender={(option) => (
-                                    <Space >
+                                    <div >
                                         <span role="img" >{`${option.label} (${option.key})`}</span>
-                                    </Space>
+                                    </div>
                                 )}></Select>
                                 <Button type='primary' onClick={() => initContent(supplierSelected)} icon={<SearchOutlined />}>ค้นหา</Button>
                             </Grid>
@@ -943,11 +939,6 @@ function DOPage() {
                                                                 </div>
                                                             </Stack>
                                                         </td>
-
-                                                        
-
-
-
                                                         {
                                                             item.name != 'line' ? item.data.map((o, index) => {
                                                                 
