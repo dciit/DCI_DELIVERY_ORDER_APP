@@ -748,7 +748,6 @@ function DOPage() {
                                 <Button type='primary' onClick={() => initContent(supplierSelected)} icon={<SearchOutlined />}>ค้นหา</Button>
                             </Grid>
                         </Grid>
-
                         <div className='bg-white text-[#ffffffc7] pl-3 py-2 font-thin flex   line-b'>
                             <div className='flex items-center gap-2 w-[40%] md:w-[50%] lg:w-[40%]'>
                                 <DiamondIcon className='text-[#5c5fc8] ' />
