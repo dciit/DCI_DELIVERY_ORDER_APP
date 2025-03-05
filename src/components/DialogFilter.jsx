@@ -11,6 +11,9 @@ function DialogFilter(props) {
         dispatch({ type: 'UPDATE_FILTER', checked: e.checked, name: name });
         refresh();
     }
+    const handleFilter = async () => {
+        location.reload();
+    }
     return (
         <Dialog open={open} onClose={() => close(false)} fullWidth maxWidth={'sm'}>
             <DialogTitle>กรองข้อมูล</DialogTitle>
@@ -27,6 +30,7 @@ function DialogFilter(props) {
                 </div>
             </DialogContent>
             <DialogActions>
+                <Button variant='contained' onClick={() => handleFilter()} >ค้นหา</Button>
                 <Button onClick={() => close(false)} >ปิดหน้าต่าง</Button>
             </DialogActions>
         </Dialog>

@@ -30,7 +30,7 @@ function SupplierPage() {
     const reducer = useSelector(state => state.mainReducer);
     const [textSearch, setTextSearch] = useState('');
     const [POBAL, setPOBAL] = useState([]);
-    const [dciHoliday,setdciHoliday] = useState([]);
+    const [dciHoliday, setdciHoliday] = useState([]);
     let rData = [];
     const filterData = (search) => {
         setTextSearch(search);
@@ -70,17 +70,13 @@ function SupplierPage() {
         setDataDefault(res.data);
         setdciHoliday(res.dciHoliday)
         setPOBAL(res.listPO)
-   
         res.data.sort(function (a, b) {
             return moment(a.date) - moment(b.date);
         });
         let filterByDate = res.data.filter((v, i) => {
-            return moment(v.date).isBetween(sDateFilter, fDateFilter, 'days', '[]') 
+            return moment(v.date).isBetween(sDateFilter, fDateFilter, 'days', '[]')
             //&& dciHoliday.some((d) => !moment(d).isSame(v.date, 'days', '[]')) ;
         });
-        console.log(sDateFilter)
-
-        // setListPO(res.listPO);
         if (typeof filterByDate == 'object' && Object.keys(filterByDate).length) {
             filterByDate.map((oData, iData) => {
                 let partno = oData.partNo;
@@ -107,10 +103,9 @@ function SupplierPage() {
                                     filterByDate[iData].listpo.push(
                                         {
                                             pono: `${oPO.pono}${oPO.itemno}`,
-                                            qty:(oPOs[iPO].whqty - oPOs[iPO].whblqty).toLocaleString('en')
+                                            qty: (oPOs[iPO].whqty - oPOs[iPO].whblqty).toLocaleString('en')
                                         }
-                                        
-                                      );
+                                    );
                                 }
                             } else {
                                 if (reqPO > 0) {
@@ -120,7 +115,7 @@ function SupplierPage() {
                                         filterByDate[iData].listpo.push(
                                             {
                                                 pono: `${oPO.pono}${oPO.itemno}`,
-                                                qty:(oPOs[iPO].whqty - oPOs[iPO].whblqty).toLocaleString('en')
+                                                qty: (oPOs[iPO].whqty - oPOs[iPO].whblqty).toLocaleString('en')
                                             }
                                         );
                                     }
@@ -238,7 +233,7 @@ function SupplierPage() {
                                         let partmaster = master.filter((vMaster) => {
                                             return vMaster.partno == item.partNo;
                                         });
-                                        
+
                                         partmaster = partmaster[0];
                                         let partno = item?.partNo;
                                         let doVal = Number(item.do);
@@ -254,24 +249,14 @@ function SupplierPage() {
                                             <TableCell className='text-right font-semibold p-0 pr-[8px] align-top '><NumericFormat displayType='text' thousandSeparator="," value={partmaster.boxQty} decimalScale={2} /></TableCell>
                                             <TableCell className='text-center border  align-top   px-[8px] py-[4px] text-[12px]'>{partmaster.unit}</TableCell>
                                             <TableCell className='text-right pr-2 font-semibold align-top text-[#5c5fc8]'><NumericFormat displayType='text' thousandSeparator="," value={item.do} decimalScale={2} /></TableCell>
-                                            {/* <TableCell className=' border px-[8px] py-[4px] text-[12px] ' >
-                                            
-                                                {
-                                                    (typeof item.listpo != 'undefined' && item.listpo.length) ? item.listpo.join(', ') : <span className='text-red-500'>**********</span>
-                                                }
-                                                
-                                            </TableCell> */}
                                             <TableCell>
-                                            {item.listpo.map((vPO, iPO) => {
-                                                return ( <>
-                                                        <span >{vPO.pono} </span> &nbsp;&nbsp; 
-                                                        {/* <span className='font-bold'>{(POBAL.filter(x=>x.partno == partno && x.pono+x.itemno == vPO.pono)[0].whqty - POBAL.filter(x=>x.partno == partno && x.pono+x.itemno == vPO.pono)[0].whblqty).toLocaleString('en')} </span> */}
+                                                {item.listpo.map((vPO, iPO) => {
+                                                    return (<>
+                                                        <span >{vPO.pono} </span> &nbsp;&nbsp;
                                                         <span className='font-bold'>({vPO.qty}) </span>
-
-                                                        </>
-                                                    
-                                                )
-                                            })} 
+                                                    </>
+                                                    )
+                                                })}
 
                                             </TableCell>
                                             <TableCell className={`text-center border align-top   px-[8px] py-[4px]   ${(item.doAct != '' && item.doAct != '0') ? 'text-[#009866]' : ''} font-semibold`}>{(item.doAct != '' && item.doAct != '0' ? Number(item.doAct).toLocaleString('en') : '-')}</TableCell>

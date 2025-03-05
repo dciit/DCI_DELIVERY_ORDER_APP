@@ -22,6 +22,7 @@ const Routers = () => {
     const version = import.meta.env.VITE_VERSION;
     const reducer = useSelector(state => state.mainReducer);
     if (reducer.version == 'undefined' || reducer.version != version) {
+        localStorage.clear();
         persistor.purge();
         dispatch({ type: 'RESET', payload: { version: version, login: false } });
     }
@@ -39,9 +40,7 @@ const Routers = () => {
                     <Route path={VITE_BASE_PATH + '/master'} element={<MasterPage />} />
                     <Route path={VITE_BASE_PATH + '/test'} element={<Test />} />
                     <Route path={VITE_BASE_PATH + '/calendar'} element={<Calendar />} />
-                    <Route path={VITE_BASE_PATH + '/warning'} element={<DoWarning />} />
-
-
+                    <Route path={VITE_BASE_PATH + '/warning'} element={<DoWarning />} /> 
                 </Route>
                 <Route path="*" element={<NotFound />} />
                 <Route path='do/partsupply' element={<PartSupply />} />

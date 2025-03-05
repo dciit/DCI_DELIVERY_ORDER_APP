@@ -5,20 +5,23 @@
 #root {
     overflow-y: hidden;
 }
-body{
+
+body {
     margin: 0;
 }
+
 #toolbar {
     border-bottom: 1px solid rgb(207, 207, 207);
 }
-.poVal { 
-    color:#6bb417;
+
+.poVal {
+    color: #6bb417;
 }
 
-table.tbMain, .tbMain th, .tbMain td {
+table.tbMain,
+.tbMain th,
+.tbMain td {
     border: 1px solid black;
     border-collapse: collapse;
     padding: 10px;
-
-  }
-  
+}

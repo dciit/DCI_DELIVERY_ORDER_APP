@@ -250,6 +250,11 @@ const IndexReducer = (state = initialState, action) => {
                 ...state,
                 supplier: action.payload
             }
+        case 'SET_BUYER':
+            return {
+                ...state,
+                buyer : action.payload
+            }
         default:
             return state
     }
