@@ -10,7 +10,6 @@ function DeliveryOfDayPage() {
 
     useEffect(() => {
         ServiceGetPlan("195021").then((res)=>{
-            console.log(res);
         }); 
     }, [])
 

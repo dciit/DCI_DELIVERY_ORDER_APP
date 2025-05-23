@@ -2,11 +2,15 @@ import { Stack, Typography } from '@mui/material'
 import { React, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 function PartComponent(props) {
-    const { master, part, vdCode, vdName ,partNo} = props;
+    const { master, part, vdCode, vdName ,partNo } = props;
     const venderMaster = useSelector(state => state.mainReducer.venderMaster);
     const [venderName, setVenderName] = useState('');
     const [partDetail, setPartDetail] = useState({});
+    const warningStockPayload = useSelector(state => state.warningStockStateReducer.warningStockState);
+    const dispatch = useDispatch();
+    
     useEffect(() => {
+
         let item = master.filter(item => item.partno == part.part);
         let itemVender = venderMaster.filter(item => item.vdCode == part.vender);
         if (Object.keys(itemVender).length && part?.key) {
@@ -16,9 +20,12 @@ function PartComponent(props) {
          
             setPartDetail(item[0]);
         }
-    }, []);
+
+   
+
+    }, [part]);
     return (
-        <div className='w-[200px] bg-white'>
+        <div className='w-[200px] bg-white '>
             {
                 (part?.key ) && <Stack className='box-part-detail absolute ' alignItems={'start'} pl={2} pt={1}>
                     <Stack direction={'row'} gap={1}  >

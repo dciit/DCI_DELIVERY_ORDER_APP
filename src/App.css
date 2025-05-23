@@ -77,6 +77,7 @@ tbody td.stuck,
 thead th.stuck {
     position: sticky;
     left: 0;
+   
 }
 
 #tbNew thead {
@@ -1034,3 +1035,11 @@ span.pickList {
 #tbNew tbody tr:not(.total) td {
     border : 1px solid #11111118;
 }
+
+/* div#tbNew table tbody tr > td:first-child {
+    background: white !important;
+    z-index: 99;
+}
+.box-part-detail {
+    z-index: 999;
+} */

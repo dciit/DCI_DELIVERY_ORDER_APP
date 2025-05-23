@@ -149,7 +149,6 @@ const IndexReducer = (state = initialState, action) => {
             }
         case 'RESET':
             var resetState = initialState
-            console.log(resetState)
             resetState.version = action.payload.version;
             resetState.login = false;
             resetState.privilege = [];
@@ -178,7 +177,6 @@ const IndexReducer = (state = initialState, action) => {
                 plan: action.payload
             }
         case 'UPDATE_PLAN_EDIT':
-            console.log(action)
             return {
                 ...state,
                 // plan: [...state.plan, ...action.payload]

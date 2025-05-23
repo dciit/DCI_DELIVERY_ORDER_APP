@@ -95,7 +95,6 @@ function MasterPage() {
         });
         if (search.length) {
             setData(filteredRows);
-            console.log(filteredRows)
         } else {
             setData(dataDefault)
         }

@@ -92,7 +92,6 @@ function PartSupply() {
                                         return item.data.map((el, ind) => {
                                             var firstOfData = item.data.indexOf(el);
                                             var rowSpan = firstOfData ? 0 : item.data.length;
-                                            console.log(el)
                                             return <TableRow >
                                                 {
                                                     rowSpan > 0 && <TableCell rowSpan={rowSpan} className='font-semibold text-center  align-top text-lg p-0'>{item.code.substring(0, 5)} - {moment(item.code, 'HH.mm.ss').add(item.refCode, 'minutes').format('HH:mm')}</TableCell>

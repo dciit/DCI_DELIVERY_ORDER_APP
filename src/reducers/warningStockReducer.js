@@ -5,7 +5,8 @@ const initialData = {
          vdCode : '', 
          partNo : '',
          isRoute:true,
-         isShowModal:true
+         isShowModal:true,
+         isFilter:false
  
      }
     
@@ -20,6 +21,7 @@ const initialData = {
             vdcode :action.payload.vdCode,
             partNo :action.payload.partNo ,
             isRoute:true,
+            isFilter:true,
             isShowModal:false
           } 
         }
@@ -31,7 +33,8 @@ const initialData = {
             vdcode :"",
             partNo :""  ,
             isRoute:false,
-            isShowModal:true
+            isShowModal:true,
+            isFilter:false
           } 
         }
 

@@ -3,7 +3,6 @@ import React from 'react'
 
 function TableComponent(props) {
     const { header, data, loading } = props;
-    console.log(data)
     return (
         <TableContainer component={Paper}>
             <Table size='small'>

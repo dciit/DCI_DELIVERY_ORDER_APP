@@ -44,7 +44,6 @@ function LoginPage() {
             url: 'https://scm.dci.co.th/BudgetCharts/BudgetRestService/api/authen?username=' + uname + '&password=' + encodeURIComponent(pwd),
             withCredentials: false,
         }).then(async (res) => {
-            console.log(res)
             if (res.data[0]['EmpCode'] != null) {
                 let privilege = await API_PRIVILEGE('DO', 'DO');
                 dispatch({ type: 'SET_PRIVILEGE', payload: privilege });
@@ -60,7 +59,6 @@ function LoginPage() {
                 }).then(async (jwt) => {
                     if (jwt.data.status) {
                         let privilege =  await API_PRIVILEGE('DO','DO');
-                        console.log(privilege)
                         dispatch({ type: 'SET_PRIVILEGE', payload: privilege });
                         dispatch({ type: 'TYPE_ACCOUNT', payload: 'employee' })
                         dispatch({ type: 'JWT', payload: jwt });

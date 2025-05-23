@@ -37,8 +37,7 @@ function SupplierPage() {
         const filteredRows = dataDefault.filter((row) => {
             return row.date.toLowerCase().includes(search.toLowerCase()) || row.part.toLowerCase().includes(search.toLowerCase()) || row.partDesc.toLowerCase().includes(search.toLowerCase())
         });
-        console.log('filter')
-        console.log(filteredRows)
+
         if (search.length) {
             setSupplierData(filteredRows);
         } else {

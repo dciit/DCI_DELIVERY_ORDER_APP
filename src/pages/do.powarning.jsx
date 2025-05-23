@@ -13,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import { Box, Typography } from '@mui/material';
 import dayjs from "dayjs";
-import PoWarning from "./do.powarning";
 
 
 
@@ -65,7 +64,7 @@ export const data = [
 
 
 
-function DoWarning() {
+function PoWarning() {
   const redx = useSelector((state) => state.mainReducer);
 
   const dispatch = useDispatch();
@@ -81,8 +80,7 @@ function DoWarning() {
   async function initContent() {
     setLoading(true);
     const initPlan = await API_WARINING_DO();
- 
-    setData(initPlan.stockWarnings);
+    setData(initPlan.poWarnings);
     setdateNow(initPlan[0]?.dateRound);
     setLoading(false);
 
@@ -192,25 +190,28 @@ function DoWarning() {
     
         <div className="flex justify-center">
           <table className="tbMain w-[90%]">
-              <tr className="bg-blue-200 text-xl">
+              <tr className="bg-blue-200 ">
                 <th>Date</th>
                 <th>Partno</th>
                 <th>Part Name</th>
-                <th>Stock</th>
+                <th>DO</th>
+                <th>PO</th>
                 <th className="w-10">Action</th>
 
               </tr>
               {row.original._venderGroup.map((item, index) => (
-                <tr className={`${item.color} text-lg`}>
+                <tr className={`${item.color}`}>
                   <td>{dayjs(item.date).format('DD/MM/YYYY')}</td>
                   <td>{item.partNo} {item.cm}</td>
                   <td> {item.description}</td>
-                  <td className="text-red-500 font-bold text-right">{item.stock.toLocaleString('en-US')} &nbsp;
-                   { (item._do > 0 && dayjs(item.date).format('YYYYMMDD') === dayjs().format('YYYYMMDD')) && <span class="bg-green-600 text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">
-                    D/O Plan: {item._do.toLocaleString('en-US')}</span>
-                   }
-                   
-                  </td>
+                    <td className="text-red-500 font-bold">{item.stock.toLocaleString('en-US')} &nbsp;
+                                     { (item._do > 0 && dayjs(item.date).format('YYYYMMDD') === dayjs().format('YYYYMMDD')) && <span class="bg-green-600 text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">
+                                      D/O Plan: {item._do.toLocaleString('en-US')}</span>
+                                     }
+                                     
+                                    </td>
+                  <td className="text-red-500 font-bold">{item._po.toLocaleString('en-US')}</td>
+              
                   <td> <Button
                         type="primary"
                         onClick={() => warningAction(row.original.vdCode, item.partNo)}
@@ -243,18 +244,11 @@ function DoWarning() {
 
   return (
     <>
-      <div className="p-6 h-screen overflow-auto ">
+      <div className="overflow-auto ">
         <div className="flex flex-row justify-between">
         {/* &nbsp;<span className="text-red-500 text-xl">(กำลังอยู่ในช่วงพัฒนา)</span> */}
-          <div className="bg-red-100 text-red-800 p-4 border border-red-300 rounded">  <span>แจ้งเตือน Stock Part Shortage</span> </div>
-        <div>  <span className="text-[#5b5b5b]">Update :</span>
-        {loading ? <span className="font-bold p-2 text-[#5c5fc8]">-</span> : <>
-          <span className="font-bold p-2 text-[#5c5fc8]">{Object.keys(data).length > 0 ? moment(data[0].dateRound).format("DD/MM/YYYY HH:mm")
-        :  moment().add( moment().minute() > 30 && 1 , 'hours').minutes( moment().minute() <= 30 ? 30 : 0).format("DD/MM/YYYY HH:mm")}</span>
-        </>}
-
-        &nbsp;&nbsp;&nbsp;
-        <span className="font-bold p-2 text-green-800 bg-green-100 ring-1 ring-green-500 rounded-lg">ข้อมูล Stock Part Shortage อัพเดททุก 30 นาที</span></div>
+        <div className="bg-yellow-100 text-yellow-800 p-3 border border-yellow-300 rounde">  <span >แจ้งเตือน PO ไม่เพียงพอ</span> </div>
+ 
       
         </div>
         {loading ? (
@@ -267,23 +261,9 @@ function DoWarning() {
 
 {/* <div style={{ maxHeight: '400px', overflowY: 'auto' }}> */}
 
-            <div className="flex flex-col gap-10 mt-4">
-
-              <div>
-                <MaterialReactTable table={table}  />
-            
-              </div>
-
-
-            <div >
-              <PoWarning/>
-           
+            <div className="mt-4">
+              <MaterialReactTable table={table}  />
             </div>
-
-            </div>
-        
-      
-
 
           </>
         )}
@@ -292,4 +272,4 @@ function DoWarning() {
   );
 }
 
-export default DoWarning;
+export default PoWarning;

@@ -23,6 +23,7 @@ import { FilterOutlined, SearchOutlined, LockOutlined } from '@ant-design/icons'
 // import { ContentPasteSearch } from '@mui/icons-material'
 import { Popover } from "antd";
 import DialogDOWarningPage from '../components/dialog.warning.do'
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 // import ColumnGroup from 'antd/es/table/ColumnGroup'
 function DOPage() {
     let prodLead = 0;
@@ -45,8 +46,8 @@ function DOPage() {
     // const [buyer, setBuyer] = useState([]);
     // const [loadingRunDO, setLoadingRunDO] = useState(false);
     const [openSnackBar, setOpenSnackBar] = useState(false);
-    var startDate = moment().add(-7, 'days').format('YYYY-MM-DD');
-    var endDate = moment().add(9, 'days').format('YYYY-MM-DD');
+    // var startDate = moment().add(-3, 'days').format('YYYY-MM-DD');
+    // var endDate = moment().add(9, 'days').format('YYYY-MM-DD');
     var fixDate = moment().add(2, 'days');
     var runDate = moment(fixDate.add(1, 'days')).add(7, 'days')
     const [once, setOnce] = useState(false);
@@ -79,6 +80,11 @@ function DOPage() {
     // const [openWarning,setOpenWarning] = useState(typeAccout == "employee" ? warningStockPayload.isShowModal : false)
     const [openWarning, setOpenWarning] = useState(false)
     const [Datas, setDatas] = useState({});
+    const [startDate, setstartDate] = useState();
+    const [endDate,setendDate] = useState()
+
+    //   var startDate = moment().add(-3, 'days').format('YYYY-MM-DD');
+    // var endDate = moment().add(9, 'days').format('YYYY-MM-DD');
     useEffect(() => {
         if (!once) {
             init();
@@ -144,8 +150,10 @@ function DOPage() {
         let filterData = [];
         try {
             filterData = DOResoure.filter((item) => {
+               
                 return item.part.toLowerCase().includes(search.toLowerCase())
             })
+
             setDOResult([...filterData])
         } catch (e) {
             setDOResult(DOResoure);
@@ -178,6 +186,9 @@ function DOPage() {
         await setSupplierSelected(vdCode)
         const initPlan = await API_GET_DO(buyerSelected, vdCode, startDate, endDate, hiddenPartNoPlan);
         setDatas(initPlan);
+        setstartDate(moment(initPlan.dateMaster.stDate).format('YYYY-MM-DD'));
+        setendDate(moment(initPlan.dateMaster.enDate).format('YYYY-MM-DD'));
+
     }
     useEffect(() => {
         if (Object.keys(Datas).length > 0) {
@@ -218,7 +229,7 @@ function DOPage() {
             setSupplierSelected(suppliers[0]?.vdcode)
         }
     }, [suppliers]);
-
+    
     async function initSupplier() {
         const listSuppliers = await API_GET_SUPPLIER_BY_BUYER({ code: buyerSelected });
 
@@ -255,7 +266,7 @@ function DOPage() {
             filterData.forEach((item, iData) => {
                 PLAN.push({ date: item.date, value: item.plan, prev: item.planPrev, changePlan: item.changePlan, historyDevPlanQTY: item.historyDevPlanQTY });
                 PICKLIST.push({ date: item.date, value: item.pickList });
-                DO.push({ date: item.date, value: item.do });
+                DO.push({ date: item.date, value: item.do ,cal : item.cal , recommand: item.recommand});
                 STOCK.push({ date: item.date, value: item.stock });
                 DOACT.push({ date: item.date, value: item.doAct });
                 PO.push({ date: item.date, value: item.po });
@@ -410,13 +421,12 @@ function DOPage() {
         })
         setDOResult(DATA_FORMAT);
         setDOResoure(DATA_FORMAT);
-        // console.log(DATA_FORMAT)
         return DATA_FORMAT;
     }
     function FN_SET_COLUMN(vdMaster) {
         var column = [];
         prodLead = vdMaster[0].vdProdLead - 1;
-        endDate = moment().add((prodLead + 7), 'days').format('YYYY-MM-DD');
+        // endDate = moment().add((prodLead + 12), 'days').format('YYYY-MM-DD');
         var sDate = moment(startDate);
         var fDate = moment(endDate);
         while (!sDate.isSame(fDate)) {
@@ -442,6 +452,7 @@ function DOPage() {
         return column;
     }
     function VIEW_DO(row, item, dateLoop) {
+        
         prodLead = VdMasters[0].vdProdLead - 1;
         fixDate = moment().add(prodLead, 'days');
         runDate = moment(fixDate.add(1, 'days')).add(7, 'days')
@@ -459,10 +470,8 @@ function DOPage() {
         var dtLoop = moment(item.date);
         var dtNow = moment().subtract(8, 'hours');
         let IsFixDay = fixDateAPI.includes(dtLoop.format('YYYY-MM-DD')) ? true : false;
-        // let isdciHoliday = (dciHoliday.includes(dtLoop.format('YYYYMMDD'))) ? false : true;
-        // console.log('this date : ' + ThisDay.format('YYYY-MM-DD'));
-        // console.log('fix date : ' + fixDate.format('YYYY-MM-DD'));
-        // console.log('run date : ' + fixDate.format('YYYY-MM-DD'));
+        let cal = item.cal
+        let recommand = item.recommand
 
 
         let isGradient = false;
@@ -484,13 +493,15 @@ function DOPage() {
         let is_not_delivery = false;
         let str_dt_loop = moment(dateLoop).format('YYYY-MM-DD');
         try {
-            if (Datas.list_holiday.includes(str_dt_loop) || Datas.list_no_delivery_in_fixed.includes(str_dt_loop)) {
+            if (Datas.list_holiday.includes(str_dt_loop) || Datas.list_no_delivery_in_fixed.includes(str_dt_loop) || 
+                Datas.list_no_delivery_forcase.includes(str_dt_loop)) {
                 is_not_delivery = false;
             } else {
                 is_not_delivery = true;
             }
         } catch (e) {
             console.log(e.message)
+            
         }
         // [24/02/2025] PEERAPONG
 
@@ -504,14 +515,20 @@ function DOPage() {
                         <CloseIcon className='text-red-500' /><span className='text-red-500 text-[10px] opacity-80'>[No Delivery]</span>
                     </div>
                 </Tooltip> : (
-                    val > 0 ? <div className='px-[4px] py-[2px] flex items-center justify-center gap-1 bg-[#0fae76] text-white rounded-md drop-shadow-lg cursor-pointer select-none hover:scale-105 duration-300 transition-all' style={{ border: `${(((moment(dtLoop).format('YYYY-MM-DD')) >= (moment(dayCurrent).format('YYYY-MM-DD'))) && ((moment(dtLoop).format('YYYY-MM-DD')) <= (moment(LastFixDateAPI).format('YYYY-MM-DD')))) ? '2px' : '0px'} solid red` }}>
-                        {/* val > 0 ? <div className='px-[4px] py-[2px] flex items-center justify-center gap-1 bg-[#0fae76] text-white rounded-md drop-shadow-lg cursor-pointer select-none hover:scale-105 duration-300 transition-all' style={{ border: `${(IsFixDay) ? '2px' : '0px'} solid red` }}> */}
+                 
+                    <>  
+                    
+                    { recommand && cal > 0 ? <div><span className={`text-red-500 ${val.toLocaleString('en').length >= 4 ? 'text-[11px]' :'text-[12px]'} font-bold p-1 rounded-md bg-red-100`}>WRN: {(cal + val).toLocaleString('en')}</span></div> : '_'}
+                        
+                    { val > 0 ? <div className='px-[4px] py-[2px] flex items-center justify-center gap-1 bg-[#0fae76] text-white rounded-md drop-shadow-lg cursor-pointer select-none hover:scale-105 duration-300 transition-all' style={{ border: `${(((moment(dtLoop).format('YYYY-MM-DD')) >= (moment(dayCurrent).format('YYYY-MM-DD'))) && ((moment(dtLoop).format('YYYY-MM-DD')) <= (moment(LastFixDateAPI).format('YYYY-MM-DD')))) ? '2px' : '0px'} solid red` }}>
+                      
+                            {(((moment(dtLoop).format('YYYY-MM-DD')) >= (moment(dayCurrent).format('YYYY-MM-DD'))) && ((moment(dtLoop).format('YYYY-MM-DD')) <= (moment(LastFixDateAPI).format('YYYY-MM-DD')))) && <LockOutlined />}
 
-                        {/* {(IsFixDay) && <LockOutlined />} */}
-                        {(((moment(dtLoop).format('YYYY-MM-DD')) >= (moment(dayCurrent).format('YYYY-MM-DD'))) && ((moment(dtLoop).format('YYYY-MM-DD')) <= (moment(LastFixDateAPI).format('YYYY-MM-DD')))) && <LockOutlined />}
-
-                        <span>{val.toLocaleString('en')}  </span>
-                    </div> : ''
+                            <span>{val.toLocaleString('en')} </span>
+                        </div> :''}
+                         
+                    </>
+                  
                 )
 
             }
@@ -540,8 +557,8 @@ function DOPage() {
 
     const content = (n16, historyDev) => (
         <div>
-            <p>แผน Distribute : {historyDev.toLocaleString('en-US')}</p>
-            <p>แผนปัจจุบัน (N16) : {n16.toLocaleString('en-US')}</p>
+            <p>แผน Distribute (Time: 08:00) : {historyDev.toLocaleString('en-US')}</p>
+            <p>แผนปัจจุบัน (Time : {moment().format("HH:mm")}) : {n16.toLocaleString('en-US')}</p>
 
         </div>
     );
@@ -575,7 +592,22 @@ function DOPage() {
 
             {item.changePlan &&
                 <Popover content={content(val, historyPlanDevQTY)}>
-                    <Button className='w-20 text-[14px] bg-[#369495] text-white'>เปลี่ยนแผน !</Button>
+
+                        {/* <div><p className='bg-blue-400 w-30 text-[12px]  rounded-md tex-white'>เปลี่ยนแผน 
+                        <svg width="30%" height="30%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4V20M12 20L18 14M12 20L6 14" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg></p></div> */}
+                      
+              
+                    <Button className=' w-20 p-4 bg-slate-700'> 
+                        
+                    <p className='text-[14px]  text-white '>เปลี่ยนแผน 
+                     <p className={`text-[24px] ${val > historyPlanDevQTY ? "text-green-600" : "text-red-600"}  inline`}>
+                        
+                        {val > historyPlanDevQTY ? "⬆" : "⬇"}</p></p>
+               
+                   
+            </Button>
                 </Popover>
             }
             <br />
@@ -721,7 +753,7 @@ function DOPage() {
     return (
         <>
             {
-                reducer.login ? <div className={`overflow-hidden w-full  h-[100%] p-3`}>
+                reducer.login ? <div className={`overflow-hidden w-full  h-[100%] p-3 `}>
                     <div className='pl-3 pr-6 py-3 border rounded-t-sm bg-white h-[100%]'>
                         <div className='flex gap-[16px]'>
                             {
@@ -745,12 +777,34 @@ function DOPage() {
                             </div>
                             <Button type='primary' onClick={() => initContent(supplierSelected)} icon={<SearchOutlined />} loading={loading}>ค้นหา</Button>
                         </div>
-                        <div className='bg-white text-[#ffffffc7] pl-3 py-2 font-thin flex   line-b'>
-                            <div className='flex items-center gap-2 w-[40%] md:w-[50%] lg:w-[40%]'>
-                                <DiamondIcon className='text-[#5c5fc8] ' />
-                                <span className='text-[#5b5b5b]'>&nbsp;D/O Distribute : </span>
-                                <span className='text-[#5c5fc8] font-semibold tracking-wider'>{RunningCode != '' ? RunningCode : '-'}</span>
-                            </div>
+                        <div className='bg-white text-[#ffffffc7] pl-3 py-2 font-thin flex flex-row justify-start  line-b '>
+                            <div className='flex items-center gap-10 w-[40%] md:w-[50%] lg:w-[40%] '>
+
+                                           <div className='flex flex-row items-center gap-1'>
+                                                <div className='mt-1'><DiamondIcon className='text-[#5c5fc8]' /></div>
+                                                <div><span className='text-[#5b5b5b]'>&nbsp;D/O Distribute : </span></div>
+                                                <div><span className='text-[#5c5fc8] font-semibold tracking-wider'> {RunningCode != '' ? RunningCode : '-'}</span>
+                                                </div>
+                                        
+                                           </div>
+                                 
+                                          
+                                            <div className='flex flex-row items-center gap-1'>
+                                                <div className='mt-1'> <AccessTimeIcon className='text-[#5c5fc8] ' /></div>
+                                                <div> <span className='text-[#5b5b5b]'>&nbsp;Information as of : </span></div>
+                                                <div><span className='text-[#5c5fc8] font-semibold tracking-wider'> {!loading ? moment().format("YYYYMMDD HH:mm") : '-'}</span></div>
+                                               
+                                               
+                                                
+                                    
+                                            </div>
+                                       
+                                
+
+                                
+                                        </div>
+
+                            
                             <div className='w-[40%]  md:w-[25%] lg:w-[40%]'>
                                 {
                                     moment() < moment(moment().format('YYYY-MM-DD 22:00:00')) &&
@@ -980,9 +1034,9 @@ function DOPage() {
                                                 }
                                                 if (item.data.length) {
                                                     return <Fragment key={`${item.classs}-${index} `}>
-                                                        <td className={`${item.name == 'line' && 'td-line'} stuck ${item.key ? 'z-50' : ''}`}>
+                                                        <td className={`${item.name == 'line' && 'td-line'} stuck ${item.key ? 'z-50 bg-': ''}`}>
                                                             <Stack direction={'row'} className='w-[400px]'>
-                                                                <PartComponent part={item} master={reduxPartMaster} vdCode={item.vdCode} vdName={item.vdName} partNo={item.part} />
+                                                                <PartComponent part={item} master={reduxPartMaster} vdCode={item.vdCode} vdName={item.vdName} partNo={item.part}  />
                                                                 <div className={`box-title text-right w-[200px] bg-white`}>
                                                                     {title}
                                                                 </div>

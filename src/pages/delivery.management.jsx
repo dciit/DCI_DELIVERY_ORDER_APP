@@ -81,9 +81,7 @@ function DeliveryManagement() {
         })
     }
     const handleSummit = () => {
-        console.log(DrawingSelected.list.filter(o => o.checked == true))
         let res = API_INSERT_LIST_DRAWING_DELIVERY_OF_DAY(DrawingSelected.list.filter(o => o.checked == true));
-        console.log(res);
     }
 
     const open = Boolean(anchorEl);
