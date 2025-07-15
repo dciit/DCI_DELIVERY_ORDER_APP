@@ -33,7 +33,7 @@ function MainAppbar() {
                         }
                     }}>
                         <span >{redx.name}</span>
-                        <Avatar sx={{ width: 30, height: 30 }} src={`http://dcihrm.dci.daikin.co.jp/PICTURE/${redx.id}.JPG`} />
+                        <Avatar sx={{ width: 30, height: 30 }} src={`https://scm.dci.co.th/pic/${redx.id}.JPG`} />
                     </div>
                 </div>
             </div>

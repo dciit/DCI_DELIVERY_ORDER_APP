@@ -25,3 +25,73 @@ table.tbMain,
     border-collapse: collapse;
     padding: 10px;
 }
+
+.custome-alert {
+    background: linear-gradient(to right, #fb7185, #ef4444);
+}
+
+.custome-waring {
+    background: linear-gradient(to right, #ef4444, #f97316);
+}
+
+.custome-bg {
+    background: linear-gradient(to right, #0e0e0e, #242424);
+}
+
+.custome-bg-h {
+    background: #ba5fa5;
+    background: linear-gradient(137deg, rgb(77, 164, 235, 1) 0%, rgba(32, 29, 163, 1) 6%, rgba(12, 111, 204, 1) 68%, rgba(77, 164, 235, 1) 100%);
+}
+
+div#container-table>* {
+    background: none;
+    color: red !important;
+}
+
+.textshadows-white {
+    text-shadow:
+        0 0 1px #fff,
+        0 0 1px #fff,
+        0 0 1px #fff,
+        0 0 1px #fff;
+}
+
+.textshadows-yellow {
+    text-shadow:
+        0 0 2px #cad800,
+        0 0 2px #cad800,
+        0 0 2px #cad800,
+        0 0 2px #cad800;
+}
+
+.textshadows-red {
+    text-shadow:
+        0 0 2px #ff0000,
+        0 0 2px #ff0000,
+        0 0 2px #ff0000,
+        0 0 2px #ff0000;
+}
+
+.textshadows-green {
+    text-shadow:
+        0 0 2px #2bff00,
+        0 0 2px #2bff00,
+        0 0 2px #2bff00,
+        0 0 2px #2bff00;
+}
+
+.textshadows-blue {
+    text-shadow:
+        0 0 2px #002fff,
+        0 0 2px #002fff,
+        0 0 2px #002fff,
+        0 0 2px #002fff;
+}
+
+.textshadows-sky {
+    text-shadow:
+        0 0 2px #0084ff,
+        0 0 2px #0084ff,
+        0 0 2px #0084ff,
+        0 0 2px #0084ff;
+}

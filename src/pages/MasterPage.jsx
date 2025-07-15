@@ -43,16 +43,16 @@ function MasterPage() {
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(15);
-  
+
     const handleChangePage = (event, newPage) => {
-      setPage(newPage);
+        setPage(newPage);
     };
-  
+
     const handleChangeRowsPerPage = (event) => {
-      setRowsPerPage(+event.target.value);
-      setPage(0);
+        setRowsPerPage(+event.target.value);
+        setPage(0);
     };
-    
+
     useEffect(() => {
         if (!once) {
             async function getData() {
@@ -85,7 +85,7 @@ function MasterPage() {
 
 
     const filterData = (search) => {
-      
+
         const filteredRows = dataDefault.filter((row) => {
             if (typeSelected.value == 'vender') {
                 return row.vdDesc.toLowerCase().includes(event.target.value.toLowerCase()) || row.vdCode.toLowerCase().includes(event.target.value.toLowerCase()) || (row.vdMinDelivery + '').includes(event.target.value.toLowerCase()) || (row.vdMaxDelivery + '').includes(event.target.value.toLowerCase())
@@ -105,10 +105,10 @@ function MasterPage() {
         setOpenVenderDetail(true);
     }
 
-    const handleOpenDialogPartDetail = (part,vdCode) => {
+    const handleOpenDialogPartDetail = (part, vdCode) => {
         setOpenBackdrop(true);
         async function getPartDetail() {
-            const content = await ServiceGetPartDetail({ part: part,vdCode:vdCode });
+            const content = await ServiceGetPartDetail({ part: part, vdCode: vdCode });
             setPartDetail(content);
             setOpenBackdrop(false);
         }
@@ -117,7 +117,7 @@ function MasterPage() {
     }
 
     const handleMasterPartUpdate = () => {
-        let _partDetail = { ...partDetail, active: partDetail.active ? "ACTIVE" : "INACTIVE" , updateBy: redux.id};      
+        let _partDetail = { ...partDetail, active: partDetail.active ? "ACTIVE" : "INACTIVE", updateBy: redux.id };
         ServiceUpdateMasterPart(_partDetail).then((res) => {
             setEffect(!effect);
             setOpenDialogPartDetail(false);
@@ -177,71 +177,75 @@ function MasterPage() {
                                 </div>
                             </div>
                             <div className='bg-white overflow-auto h-full w-full'>
-                               <TableContainer>
-                                <Table size='small' id="tbContent" stickyHeader={true}>
-                                    <TableHead>
-                                        <TableRow>
+                                <TableContainer>
+                                    <Table size='small' id="tbContent" stickyHeader={true}>
+                                        <TableHead>
+                                            <TableRow>
+                                                {
+                                                    typeSelected == 'vender' ? <>
+                                                        <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>รหัส</TableCell>
+                                                        <TableCell className='text-start border font-bold' style={{border:'1px solid #eee'}}>ชื่อ</TableCell>
+                                                        <TableCell className='text-right font-bold' style={{border:'1px solid #eee'}}>PU Leadtime (D)</TableCell>
+                                                        <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>รอบต่อวัน</TableCell>
+                                                        <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>จัดส่งขั้นต่ำ (กล่อง)</TableCell>
+                                                        <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>จัดส่งสูงสุด (กล่อง)</TableCell>
+                                                        <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>ช่วงเวลาเข้าส่ง</TableCell>
+                                                        <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>เครื่องมือ</TableCell>
+                                                    </> :
+                                                        <>
+                                                            <TableCell className='pl-3 border font-bold' style={{border:'1px solid #eee'}}>CODE</TableCell>
+                                                            <TableCell className='pl-3 border font-bold' style={{border:'1px solid #eee'}}>NAME</TableCell>
+                                                            <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>UNIT</TableCell>
+                                                            <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>PDLT</TableCell>
+                                                            <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>Std. Packing</TableCell>
+                                                            <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>จำนวนชิ้นงานขั้นต่ำในการจัดส่ง</TableCell>
+                                                            <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>Capacity ของ Supplier</TableCell>
+                                                            <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>BOX/Pallet</TableCell>
+                                                            <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>Safety Stock</TableCell>
+                                                            <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>VENDER</TableCell>
+                                                            <TableCell className='text-center border font-bold' style={{border:'1px solid #eee'}}>STATUS</TableCell>
+                                                            <TableCell className='text-center border' style={{border:'1px solid #eee'}}>เครื่องมือ</TableCell>
+                                                        </>
+                                                }
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+
                                             {
-                                                typeSelected == 'vender' ? <>
-                                                    <TableCell className='text-center border'>รหัส</TableCell>
-                                                    <TableCell className='text-start border'>ชื่อ</TableCell>
-                                                    <TableCell className='text-right'>PU Leadtime (D)</TableCell>
-                                                    <TableCell className='text-center border'>รอบต่อวัน</TableCell>
-                                                    <TableCell className='text-center border'>จัดส่งขั้นต่ำ (กล่อง)</TableCell>
-                                                    <TableCell className='text-center border'>จัดส่งสูงสุด (กล่อง)</TableCell>
-                                                    <TableCell className='text-center border'>เครื่องมือ</TableCell>
-                                                </> :
-                                                    <>
-                                                        <TableCell className='pl-3 border'>CODE</TableCell>
-                                                        <TableCell className='pl-3 border'>NAME</TableCell>
-                                                        <TableCell className='text-center border'>UNIT</TableCell>
-                                                        <TableCell className='text-center border'>PDLT</TableCell>
-                                                        <TableCell className='text-center border'>BOX QTY</TableCell>
-                                                        <TableCell className='text-center border'>BOX MIN</TableCell>
-                                                        <TableCell className='text-center border'>BOX MAX</TableCell>
-                                                        <TableCell className='text-center border'>BOX/Pallet</TableCell>
-                                                        <TableCell className='text-center border'>VENDER</TableCell>
-                                                        <TableCell className='text-center border'>STATUS</TableCell>
-                                                        <TableCell className='text-center border'>#</TableCell>
-                                                    </>
+
+                                                loading ? <TableRow><TableCell colSpan={typeSelected == 'vender' ? 6 : 9} className='text-center'><CircularProgress /></TableCell></TableRow> : (
+                                                    data.length ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item, index) => {
+                                                        return typeSelected == 'vender' ? <TableRow key={index}>
+                                                            <TableCell className='text-center  border' style={{border:'1px solid #eee'}}>{item?.vdCode}</TableCell>
+                                                            <TableCell className='border ' style={{border:'1px solid #eee'}}>{item?.vdDesc}</TableCell>
+                                                            <TableCell className='text-right border ' style={{border:'1px solid #eee'}}>{`${item?.vdProdLead}`}</TableCell>
+                                                            <TableCell className='text-right border ' style={{border:'1px solid #eee'}}>{item?.vdRound}</TableCell>
+                                                            <TableCell className='text-right border ' style={{border:'1px solid #eee'}}>{item?.vdMinDelivery != undefined ? Number(item.vdMinDelivery).toLocaleString('en') : ''}</TableCell>
+                                                            <TableCell className='text-right border ' style={{border:'1px solid #eee'}}>{item?.vdMaxDelivery != undefined ? Number(item.vdMaxDelivery).toLocaleString('en') : ''}</TableCell>
+                                                            <TableCell className='text-right border ' style={{border:'1px solid #eee'}}>{item?.vdTimeScheduleDelivery != undefined ? item.vdTimeScheduleDelivery : ''}</TableCell>
+                                                            <TableCell className='text-center'><div className='flex gap-1 justify-center'>
+                                                                <Button type='primary' onClick={() => dialogVenderDetail(item?.vdCode)} icon={<EditOutlined />}>  แก้ไข</Button></div></TableCell>
+                                                        </TableRow> :
+                                                            <TableRow key={index} className='tdMaster'>
+                                                                <TableCell className='border text-left pl-4 ' style={{border:'1px solid #eee'}}>{item?.partno}  {item?.cm}</TableCell>
+                                                                <TableCell style={{border:'1px solid #eee'}}>{item?.description}</TableCell>
+                                                                <TableCell className='border text-center ' style={{ border: '1px solid #eee' }}>{item?.unit}</TableCell>
+                                                                <TableCell className='border text-right ' style={{ border: '1px solid #eee' }}>{item?.pdlt}</TableCell>
+                                                                <TableCell className='border text-right ' style={{border:'1px solid #eee'}}>{item?.boxQty != undefined ? Number(item.boxQty).toLocaleString('en') : ''}</TableCell>
+                                                                <TableCell className='border text-right ' style={{border:'1px solid #eee'}}>{item?.boxMin != undefined ? Number(item.boxMin).toLocaleString('en') : ''}</TableCell>
+                                                                <TableCell className='border text-right ' style={{border:'1px solid #eee'}}>{item?.boxMax != undefined ? Number(item.boxMax).toLocaleString('en') : ''}</TableCell>
+                                                                <TableCell className='border text-right ' style={{border:'1px solid #eee'}}>{item?.boxPerPallet != undefined ? Number(item.boxPerPallet).toLocaleString('en') : '0'}</TableCell>
+                                                                <TableCell className='border text-right ' style={{border:'1px solid #eee'}}>{item?.safetystock != undefined ? Number(item.safetystock).toLocaleString('en') : ''}</TableCell>
+                                                                <TableCell className='border text-right ' style={{border:'1px solid #eee'}}>{item?.vdCode}</TableCell>
+                                                                <TableCell className='border text-right ' style={{border:'1px solid #eee'}}>{item?.active}</TableCell>
+                                                                <TableCell className='border text-center'><div className='flex gap-1 justify-center'><Button type='primary' size='small' onClick={() => handleOpenDialogPartDetail(item?.partno, item?.vdCode)} icon={<EditOutlined />}>แก้ไข</Button></div></TableCell>
+                                                            </TableRow>
+                                                    }) :
+                                                        <TableRow><TableCell colSpan={typeSelected == 'vender' ? 6 : 8} className='text-center'>ไม่พบข้อมูลที่คุณค้นหา</TableCell></TableRow>
+                                                )
                                             }
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                            
-                                        {
-                                          
-                                            loading ? <TableRow><TableCell colSpan={typeSelected == 'vender' ? 6 : 9} className='text-center'><CircularProgress /></TableCell></TableRow> : (
-                                                data.length ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item, index) => {
-                                                    return typeSelected == 'vender' ? <TableRow key={index}>
-                                                        <TableCell className='text-center  border'>{item?.vdCode}</TableCell>
-                                                        <TableCell className='font-bold border '>{item?.vdDesc}</TableCell>
-                                                        <TableCell className='text-right border font-semibold'>{`${item?.vdProdLead}`}</TableCell>
-                                                        <TableCell className='text-right border font-semibold'>{item?.vdRound}</TableCell>
-                                                        <TableCell className='text-right border font-semibold'>{item?.vdMinDelivery != undefined ? Number(item.vdMinDelivery).toLocaleString('en') : ''}</TableCell>
-                                                        <TableCell className='text-right border font-semibold'>{item?.vdMaxDelivery != undefined ? Number(item.vdMaxDelivery).toLocaleString('en') : ''}</TableCell>
-                                                        <TableCell className='text-center'><div className='flex gap-1 justify-center'>
-                                                            <Button type='primary' onClick={() => dialogVenderDetail(item?.vdCode)} icon={<EditOutlined />}>  แก้ไข</Button></div></TableCell>
-                                                    </TableRow> :
-                                                        <TableRow key={index} className='tdMaster'>
-                                                            <TableCell className='border text-left pl-4 font-bold'>{item?.partno}  {item?.cm}</TableCell>
-                                                            <TableCell>{item?.description}</TableCell>
-                                                            <TableCell className='border text-center font-bold'>{item?.unit}</TableCell>
-                                                            <TableCell className='border text-right font-bold '>{item?.pdlt}</TableCell>
-                                                            <TableCell className='border text-right font-bold '>{item?.boxQty != undefined ? Number(item.boxQty).toLocaleString('en') : ''}</TableCell>
-                                                            <TableCell className='border text-right font-bold '>{item?.boxMin != undefined ? Number(item.boxMin).toLocaleString('en') : ''}</TableCell>
-                                                            <TableCell className='border text-right font-bold '>{item?.boxMax != undefined ? Number(item.boxMax).toLocaleString('en') : ''}</TableCell>
-                                                            <TableCell className='border text-right font-bold '>{item?.boxPerPallet != undefined ? Number(item.boxPerPallet).toLocaleString('en') : '0'}</TableCell>
-                                                            <TableCell className='border text-right font-bold'>{item?.vdCode}</TableCell>
-                                                            <TableCell className='border text-right font-bold'>{item?.active}</TableCell>
-                                                            <TableCell className='border text-center'><div className='flex gap-1 justify-center'><Button type='primary' size='small' onClick={() => handleOpenDialogPartDetail(item?.partno,item?.vdCode)} icon={<EditOutlined />}>แก้ไข</Button></div></TableCell>
-                                                        </TableRow>
-                                                }) :
-                                                    <TableRow><TableCell colSpan={typeSelected == 'vender' ? 6 : 8} className='text-center'>ไม่พบข้อมูลที่คุณค้นหา</TableCell></TableRow>
-                                            )
-                                        }
-                                    </TableBody>
-                                </Table>
+                                        </TableBody>
+                                    </Table>
                                 </TableContainer>
                                 <TablePagination
                                     rowsPerPageOptions={[10, 25, 100]}
@@ -293,7 +297,7 @@ function MasterPage() {
                                 variant="standard"
                                 focused
                                 fullWidth
-                                  onChange={(e) => {
+                                onChange={(e) => {
                                     setPartDetail({ ...partDetail, cm: e.target.value })
                                 }}
                             />
@@ -344,7 +348,7 @@ function MasterPage() {
                             <TextField
                                 type='number'
                                 id="standard-read-only-input"
-                                label="BOX QTY"
+                                label="Std. Packing"
                                 value={partDetail?.boxQty}
                                 variant="standard"
                                 fullWidth
@@ -373,7 +377,7 @@ function MasterPage() {
                             <TextField
                                 type='number'
                                 id="standard-read-only-input"
-                                label="BOX MIN"
+                                label="จำนวนชิ้นงานขั้นต่ำในการจัดส่ง"
                                 value={partDetail?.boxMin}
                                 variant="standard"
                                 fullWidth
@@ -387,7 +391,7 @@ function MasterPage() {
                             <TextField
                                 type='number'
                                 id="standard-read-only-input"
-                                label="BOX MAX"
+                                label="Capacity ของ Supplier"
                                 value={partDetail?.boxMax}
                                 variant="standard"
                                 fullWidth
@@ -397,7 +401,21 @@ function MasterPage() {
                                 }}
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid item xs={6}>
+                            <TextField
+                                type='number'
+                                id="standard-read-only-input"
+                                label="SAFETY STOCK"
+                                value={partDetail?.safetystock}
+                                variant="standard"
+                                fullWidth
+                                focused
+                                onChange={(e) => {
+                                    setPartDetail({ ...partDetail, safetystock: parseInt(e.target.value) })
+                                }}
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
                             <TextField
                                 id="standard-read-only-input"
                                 label="VENDER"
@@ -410,12 +428,12 @@ function MasterPage() {
                             />
                         </Grid>
                         <Grid item xs={12}>
-                        <label className="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" value={partDetail?.active} checked={(partDetail?.active === true || partDetail?.active === 'ACTIVE') ? true : false} onChange={(e) => setPartDetail({ ...partDetail, active: e.target.checked })} className="sr-only peer"/>
+                            <label className="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value={partDetail?.active} checked={(partDetail?.active === true || partDetail?.active === 'ACTIVE') ? true : false} onChange={(e) => setPartDetail({ ...partDetail, active: e.target.checked })} className="sr-only peer" />
                                 <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
                                 <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">ACTIVE</span>
-                                </label>   
-                        </Grid>                   
+                            </label>
+                        </Grid>
                     </Grid>
                 </DialogContent>
                 <DialogActions>

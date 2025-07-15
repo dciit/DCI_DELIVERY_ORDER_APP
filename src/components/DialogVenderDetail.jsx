@@ -10,6 +10,8 @@ import moment from 'moment'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Button, Input } from 'antd'
+
+
 function DialogVenderDetail(props) {
     const reducer = useSelector(state => state.mainReducer);
     const { open, setOpen, loading, setLoading, refresh, setOpenSnackBar, venderSelected, data, setData } = props;
@@ -39,7 +41,7 @@ function DialogVenderDetail(props) {
     }
     const handleUpdateVenderSTD = async () => {
         // ServiceUpdateVenderDetail({ min: vender.vdMinDelivery, max: vender.vdMaxDelivery, round: vender.vdRound, vender: vender?.vdCode, timeSchedule: vender.vdTimeScheduleDelivery }).then((res) => {
-        let res = await ApiUpdateVenderSTD({ min: vender.vdMinDelivery, max: vender.vdMaxDelivery, round: vender.vdRound, vender: vender?.vdCode, vdBoxPeriod: vender.vdBoxPeriod,vdProdLead: vender.vdProdLead });
+        let res = await ApiUpdateVenderSTD({ min: vender.vdMinDelivery, max: vender.vdMaxDelivery, timesech: vender.vdTimeScheduleDelivery, round: vender.vdRound, vender: vender?.vdCode, vdBoxPeriod: vender.vdBoxPeriod, vdProdLead: vender.vdProdLead });
         var redrawData = data;
         var IndexOfVenders = redrawData.map(x => x.vdCode).indexOf(vender.vdCode);
         if (IndexOfVenders != -1) {
@@ -143,6 +145,17 @@ function DialogVenderDetail(props) {
                                         onChange={(e) => {
                                             setVender({ ...vender, vdProdLead: e.target.value })
                                         }} />
+                                </div>
+                                <div className='sm:col-span-1 lg:col-span-1 grid  grid-cols-4 gap-1'>
+                                    <div className='text-[14px] col-span-2 text-end pr-2 items-center justify-end flex'>ช่วงเวลาในการจัดส่ง </div>
+                                    <Input
+                                        value={vender?.vdTimeScheduleDelivery || "00:00:00"}
+                                        placeholder='ชั่วโมง:นาที:วินาที'
+                                        maxLength={8}
+                                        onChange={(e) => {
+                                            setVender({ ...vender, vdTimeScheduleDelivery: e.target.value })
+                                        }}
+                                    />
                                 </div>
                             </div>
                             <Grid item xs={12}>

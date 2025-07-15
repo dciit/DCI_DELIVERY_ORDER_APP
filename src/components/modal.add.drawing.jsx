@@ -215,7 +215,7 @@ function ModalAddDrawing({ open, setOpen, load, vdCode }) {
             </div>
             <div className="grid grid-cols-4">
               <div className="flex justify-end pr-2 items-center">
-                <span>Box Min : </span>
+                <span>จำนวนชิ้นงานขั้นต่ำในการจัดส่ง : </span>
               </div>
               <div className="col-span-3">
                 <Input
@@ -230,7 +230,7 @@ function ModalAddDrawing({ open, setOpen, load, vdCode }) {
             </div>
             <div className="grid grid-cols-4">
               <div className="flex justify-end pr-2 items-center">
-                <span>Box Qty : </span>
+                <span>Std. Packing : </span>
               </div>
               <div className="col-span-3">
                 <Input
